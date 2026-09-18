@@ -51,19 +51,3 @@ Resumindo:
 docker compose up --build
 ```
 
-## Sobre os dados (por que esse repositório é seguro de publicar)
-
-O sistema antigo tinha mais de 40 mil solicitações reais, com nomes,
-telefones e e-mails de gente de verdade. Pra migrar esse histórico pro banco
-novo, em algum momento foram usadas migrations do Flyway com esses dados reais
-dentro — mas essas migrations **nunca estiveram neste repositório**. Elas só
-existiram numa pasta separada, fora do controle de versão, numa máquina local.
-
-O que está no git (`src/main/resources/db/migration/`) é só duas coisas: o
-schema (estrutura das tabelas) e dados genéricos sem nenhuma informação
-pessoal — tipos de veículo, o catálogo de cidades do IBGE, as unidades da
-OVG, e alguns registros fictícios de exemplo (marcados como "(exemplo)" no
-próprio texto) pra já ter algo pra ver na tela assim que o sistema sobe.
-
-Um clone novo desse repositório sobe funcionando perfeitamente, com esses
-dados de exemplo — nunca com uma solicitação, veículo ou usuário real.
