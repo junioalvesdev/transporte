@@ -1,0 +1,194 @@
+:root {
+    --ovg-rosa: #f288b0;
+    --ovg-roxo: #816bad;
+    --ovg-verde: #a1ce67;
+    --ovg-amarelo: #f5d941;
+    --fundo: #f7f7fb;
+    --texto: #2c2c34;
+    --borda: #e5e5ec;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--fundo);
+    color: var(--texto);
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.navbar-ovg {
+    background: linear-gradient(90deg, var(--ovg-roxo), var(--ovg-rosa));
+}
+
+.navbar-ovg .navbar-brand {
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.cartao {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.cartao-busca {
+    padding: 24px;
+}
+
+.cartao-viagem {
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    transition: box-shadow 0.15s ease;
+}
+
+.cartao-viagem:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.rota-titulo {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--ovg-roxo);
+}
+
+.badge-vagas {
+    background-color: var(--ovg-verde);
+    color: #1c3a10;
+    font-weight: 600;
+}
+
+.badge-vagas.baixa {
+    background-color: var(--ovg-amarelo);
+    color: #4a3b00;
+}
+
+.btn-ovg-principal {
+    background-color: var(--ovg-roxo);
+    border-color: var(--ovg-roxo);
+    color: #fff;
+}
+
+.btn-ovg-principal:hover {
+    background-color: #6c579a;
+    border-color: #6c579a;
+    color: #fff;
+}
+
+.btn-ovg-secundario {
+    background-color: #fff;
+    border-color: var(--ovg-roxo);
+    color: var(--ovg-roxo);
+}
+
+.btn-ovg-secundario.ativo {
+    background-color: var(--ovg-roxo);
+    color: #fff;
+}
+
+.status-badge-pendente {
+    background-color: var(--ovg-amarelo);
+    color: #4a3b00;
+}
+
+.status-badge-aprovada {
+    background-color: var(--ovg-verde);
+    color: #1c3a10;
+}
+
+.status-badge-reprovada,
+.status-badge-cancelada {
+    background-color: #f0a0a0;
+    color: #5a1414;
+}
+
+/* Seletor de data/hora: calendario + roda de hora/minuto estilo Android */
+.seletor-datahora {
+    position: relative;
+}
+
+/* display fica sempre "flex" (nunca "none"): o flatpickr inline e o scroll
+   das rodas de hora/minuto precisam de dimensoes reais pra funcionar direito
+   — um ancestral com display:none zera a altura deles e quebra o
+   posicionamento inicial. Visibilidade e controlada so por visibility/opacity. */
+.seletor-datahora-popup {
+    display: flex;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 1080;
+    top: calc(100% + 4px);
+    left: 0;
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    gap: 10px;
+    transition: opacity 0.1s ease;
+}
+
+.seletor-datahora-popup.aberto {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.roda-tempo-grupo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.roda-tempo-coluna {
+    position: relative;
+}
+
+.roda-tempo {
+    width: 48px;
+    height: calc(7 * 36px);
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    text-align: center;
+    scrollbar-width: none;
+}
+
+.roda-tempo::-webkit-scrollbar {
+    display: none;
+}
+
+.roda-tempo-item {
+    height: 36px;
+    line-height: 36px;
+    scroll-snap-align: center;
+    color: #9aa0a6;
+    font-size: 0.95rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.roda-tempo-item.selecionado {
+    color: var(--ovg-roxo);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.roda-tempo-marcador {
+    position: absolute;
+    top: calc(3 * 36px);
+    left: 0;
+    right: 0;
+    height: 36px;
+    border-top: 1px solid var(--borda);
+    border-bottom: 1px solid var(--borda);
+    pointer-events: none;
+}
+
+.roda-tempo-separador {
+    font-weight: 600;
+    color: var(--texto);
+}

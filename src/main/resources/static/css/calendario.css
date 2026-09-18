@@ -1,0 +1,240 @@
+/* Visual inspirado no calendario do sistema legado (layout estilo Google
+   Calendar: grade de mes com "pilulas" de evento coloridas por status),
+   adaptado a paleta da OVG. */
+
+.calendario-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 14px 14px 0 0;
+}
+
+.calendario-cabecalho-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.calendario-icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ovg-roxo);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.calendario-titulo {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--texto);
+    margin: 0;
+}
+
+.calendario-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.botao-nav-circular {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.botao-nav-circular:hover {
+    background: var(--fundo);
+}
+
+.botao-hoje {
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--ovg-rosa);
+    color: #fff;
+    cursor: pointer;
+}
+
+.botao-hoje:hover {
+    opacity: 0.9;
+}
+
+.calendario-modo {
+    display: flex;
+    gap: 4px;
+}
+
+.calendario-container {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* Grade de mes */
+.mes-cabecalho-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--fundo);
+    border-bottom: 1px solid var(--borda);
+}
+
+.mes-dia-semana {
+    padding: 10px 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #5f6368;
+    text-transform: uppercase;
+}
+
+.mes-grade {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.mes-celula {
+    border-left: 1px solid var(--borda);
+    border-top: 1px solid var(--borda);
+    background: #fff;
+    min-height: 110px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.mes-celula:nth-child(7n + 1) {
+    border-left: none;
+}
+
+.mes-celula.fora-do-mes {
+    background: var(--fundo);
+}
+
+.mes-celula.fora-do-mes .mes-dia-numero {
+    color: #9aa0a6;
+}
+
+.mes-celula.hoje {
+    background: #f7ecf3;
+}
+
+.mes-dia-numero {
+    font-size: 0.85rem;
+    color: var(--texto);
+    margin-bottom: 2px;
+}
+
+.mes-celula.hoje .mes-dia-numero {
+    color: var(--ovg-rosa);
+    font-weight: 700;
+}
+
+.evento-pilula {
+    background: #6c757d;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.evento-pilula:hover {
+    filter: brightness(0.92);
+}
+
+.evento-pilula.cor-planejada { background: #6c757d; }
+.evento-pilula.cor-aberta { background: #4caf50; }
+.evento-pilula.cor-lotada { background: #ff9800; }
+.evento-pilula.cor-andamento { background: #1a73e8; }
+.evento-pilula.cor-concluida { background: var(--ovg-roxo); }
+.evento-pilula.cor-cancelada { background: #f44336; }
+
+.mais-eventos {
+    background: var(--fundo);
+    color: #5f6368;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.mais-eventos:hover {
+    text-decoration: underline;
+}
+
+/* Grade de semana: mesma pilula de evento, uma coluna por dia */
+.semana-grade {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.semana-coluna {
+    border-left: 1px solid var(--borda);
+    padding: 10px 8px;
+    min-height: 220px;
+}
+
+.semana-coluna:nth-child(7n + 1) {
+    border-left: none;
+}
+
+.semana-cabecalho {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.semana-cabecalho.hoje {
+    color: var(--ovg-rosa);
+}
+
+.semana-coluna .evento-pilula {
+    display: block;
+    margin-bottom: 5px;
+    white-space: normal;
+    line-height: 1.3;
+    padding: 5px 7px;
+}
+
+@media (max-width: 768px) {
+    .mes-celula {
+        min-height: 70px;
+    }
+    .mes-dia-semana {
+        font-size: 0.65rem;
+    }
+    .calendario-titulo {
+        font-size: 1rem;
+    }
+}

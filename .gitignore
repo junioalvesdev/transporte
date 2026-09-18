@@ -1,0 +1,35 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+*.log
+
+# Imagens institucionais (banner OVG, diagramas de veiculo) usadas so na
+# Ordem de Trafego — opcionais, carregadas via classpath se existirem, nunca
+# comitadas. Ficam fora de static/ de proposito: nao viram URL publica.
+src/main/resources/img/*
+!src/main/resources/img/.gitkeep
+
+# Migrations com dados reais importados do sistema legado (nomes, telefones,
+# e-mails de funcionarios e beneficiarios da OVG) — rodam so localmente/em
+# producao, nunca comitadas. Um clone novo do repo aplica so o schema e os
+# seeds genericos (db/migration/), sem historico real nenhum.
+db-legado-privado/*.sql
+!db-legado-privado/.gitkeep
+
+# Compose que aponta pro banco real da OVG (dados reais no volume) — so pra
+# uso local/producao, nunca vai pro git. O docker-compose.yml "oficial" do
+# repositorio sobe sempre com banco vazio (ver secao "Sobre os dados" no README).
+docker-compose.local.yml
+
+# Copia das migrations originais (antes de consolidar em V1+V2) — usada so
+# pelo docker-compose.local.yml, pra nao quebrar o checksum do Flyway no
+# banco que ja tinha essas migrations antigas aplicadas. Nao tem dado pessoal
+# (so schema e seed generico), mas fica de fora do git pra nao reintroduzir
+# os varios arquivos que foram consolidados de proposito em db/migration/.
+db-migration-historico-completo/*.sql
+!db-migration-historico-completo/.gitkeep
+
+# config local do meu editor/ferramenta, nao faz parte do projeto
+.claude/
