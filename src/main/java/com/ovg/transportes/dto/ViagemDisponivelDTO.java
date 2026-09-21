@@ -11,6 +11,7 @@ public record ViagemDisponivelDTO(
     LocalDateTime dataHoraSaida,
     LocalDateTime dataHoraChegadaEstimada,
     String tipoVeiculo,
-    int vagasDisponiveis
+    int vagasDisponiveis,
+    Long minhaSolicitacaoId
 ) {
 }

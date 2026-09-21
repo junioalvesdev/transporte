@@ -128,6 +128,15 @@ public class SolicitacaoService {
         }
 
         solicitacao.cancelar();
+
+        // se ja tinha sido vinculada a uma viagem (aprovada e depois cancelada),
+        // libera a vaga: cancela o participante e recalcula a ocupacao da
+        // viagem, senao o lugar fica preso mesmo com a solicitacao cancelada
+        viagemParticipanteRepository.findBySolicitacaoId(id).ifPresent(participante -> {
+            participante.cancelar();
+            participante.getViagem().recalcularStatusPorOcupacao();
+        });
+
         return SolicitacaoResponseDTO.de(solicitacao);
     }
 

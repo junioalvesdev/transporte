@@ -24,12 +24,14 @@ import com.ovg.transportes.repository.CidadeRepository;
 import com.ovg.transportes.repository.LocalAdministrativoRepository;
 import com.ovg.transportes.repository.MotoristaRepository;
 import com.ovg.transportes.repository.RotaRepository;
+import com.ovg.transportes.repository.SolicitacaoRepository;
 import com.ovg.transportes.repository.VeiculoRepository;
 import com.ovg.transportes.repository.ViagemParticipanteRepository;
 import com.ovg.transportes.repository.ViagemRepository;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -52,6 +54,7 @@ public class ViagemService {
     private final ViagemParticipanteRepository viagemParticipanteRepository;
     private final RotaRepository rotaRepository;
     private final SolicitacaoService solicitacaoService;
+    private final SolicitacaoRepository solicitacaoRepository;
     private final UsuarioAutenticadoProvider usuarioAutenticadoProvider;
 
     public ViagemService(
@@ -63,6 +66,7 @@ public class ViagemService {
         ViagemParticipanteRepository viagemParticipanteRepository,
         RotaRepository rotaRepository,
         SolicitacaoService solicitacaoService,
+        SolicitacaoRepository solicitacaoRepository,
         UsuarioAutenticadoProvider usuarioAutenticadoProvider
     ) {
         this.viagemRepository = viagemRepository;
@@ -73,18 +77,30 @@ public class ViagemService {
         this.viagemParticipanteRepository = viagemParticipanteRepository;
         this.rotaRepository = rotaRepository;
         this.solicitacaoService = solicitacaoService;
+        this.solicitacaoRepository = solicitacaoRepository;
         this.usuarioAutenticadoProvider = usuarioAutenticadoProvider;
     }
 
-    @Transactional
+    // READ_COMMITTED (em vez do REPEATABLE READ padrao do MySQL) e essencial
+    // aqui: sem isso, o SELECT ... FOR UPDATE da viagem ate espera a outra
+    // transacao liberar a trava, mas a colecao "participantes" (lazy, lida
+    // com SELECT comum) continua enxergando a "foto" de quando a transacao
+    // comecou — ai as duas aprovacoes concorrentes acham que ainda ha vaga e
+    // a viagem fica sobrelotada. READ_COMMITTED faz cada leitura ver sempre o
+    // que ja foi commitado, inclusive apos esperar a trava da outra liberar.
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     @PreAuthorize("hasRole('TRANSPORTE')")
     public ViagemResponseDTO aprovarSolicitacao(Long solicitacaoId, AprovarSolicitacaoRequestDTO requisicao) {
         Solicitacao solicitacao = solicitacaoService.buscarPorId(solicitacaoId);
         Cidade cidadeEmbarque = buscarCidade(requisicao.cidadeEmbarqueId());
         Cidade cidadeDesembarque = buscarCidade(requisicao.cidadeDesembarqueId());
 
+        // SELECT ... FOR UPDATE quando reaproveita uma viagem existente: duas
+        // aprovacoes pra mesma viagem em paralelo nao podem "passar" juntas
+        // pela checagem de vaga em vincularParticipante (ver ViagemRepository)
         Viagem viagem = requisicao.viagemExistenteId() != null
-            ? buscarPorId(requisicao.viagemExistenteId())
+            ? viagemRepository.buscarPorIdComTravaDeEscrita(requisicao.viagemExistenteId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Viagem nao encontrada: " + requisicao.viagemExistenteId()))
             : criarViagemComRota(requisicao.novaViagem());
 
         vincularParticipante(viagem, solicitacao, solicitacao.getQtdPassageiros(), cidadeEmbarque, cidadeDesembarque);
@@ -93,11 +109,17 @@ public class ViagemService {
         return ViagemResponseDTO.de(viagem);
     }
 
-    @Transactional
+    // ver o comentario em aprovarSolicitacao sobre por que READ_COMMITTED e
+    // obrigatorio aqui junto com o SELECT ... FOR UPDATE
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public ViagemResponseDTO solicitarVaga(Long viagemId, SolicitarVagaRequestDTO requisicao) {
-        Viagem viagem = buscarPorId(viagemId);
+        // idem: trava a viagem ate o fim da transacao, senao duas pessoas
+        // clicando "Solicitar vaga" ao mesmo tempo na ultima vaga livre
+        // conseguem passar juntas pela checagem de "tem vaga" logo abaixo
+        Viagem viagem = viagemRepository.buscarPorIdComTravaDeEscrita(viagemId)
+            .orElseThrow(() -> new RecursoNaoEncontradoException("Viagem nao encontrada: " + viagemId));
         if (viagem.getStatus() != StatusViagem.ABERTA_PARA_APROVEITAMENTO) {
-            throw new NegocioException("Esta viagem nao esta aberta para aproveitamento");
+            throw new NegocioException("Outra pessoa pegou essa vaga primeiro, nao ha mais disponibilidade");
         }
         if (!viagem.temVagaPara(requisicao.qtdPassageiros())) {
             throw new NegocioException("Vagas insuficientes: restam %d, solicitado %d"
@@ -105,6 +127,9 @@ public class ViagemService {
         }
 
         Usuario solicitante = usuarioAutenticadoProvider.obterUsuarioLogado();
+        if (minhaSolicitacaoNaViagem(viagem, solicitante.getId()) != null) {
+            throw new NegocioException("Voce ja tem uma vaga solicitada nesta viagem");
+        }
         Cidade cidadeEmbarque = buscarCidade(requisicao.cidadeEmbarqueId());
         Cidade cidadeDesembarque = buscarCidade(requisicao.cidadeDesembarqueId());
 
@@ -127,6 +152,9 @@ public class ViagemService {
             false
         );
         solicitacao.aprovar();
+        // precisa existir no banco antes do ViagemParticipante referencia-la
+        // (a coluna solicitacao_id e not-null, e o Hibernate nao salva em cascata aqui)
+        solicitacaoRepository.save(solicitacao);
 
         vincularParticipante(viagem, solicitacao, requisicao.qtdPassageiros(), cidadeEmbarque, cidadeDesembarque);
         return ViagemResponseDTO.de(viagem);
@@ -225,6 +253,11 @@ public class ViagemService {
         }
         ViagemParticipante participante = new ViagemParticipante(viagem, solicitacao, qtdPassageiros, cidadeEmbarque, cidadeDesembarque);
         viagemParticipanteRepository.save(participante);
+        // o save() acima nao atualiza sozinho a colecao "participantes" ja
+        // carregada em memoria (relacao inversa, Hibernate nao sincroniza isso
+        // automaticamente) — sem este add(), o recalculo abaixo conta vagas
+        // desatualizadas e a viagem nunca vira LOTADA na hora certa
+        viagem.getParticipantes().add(participante);
         viagem.recalcularStatusPorOcupacao();
     }
 

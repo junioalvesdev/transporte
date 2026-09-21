@@ -49,6 +49,21 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+.cartao-viagem-ja-solicitada {
+    background: #eefbf1;
+    border-color: #a1ce67;
+}
+
+.badge-ja-solicitada {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background-color: var(--ovg-verde);
+    color: #1c3a10;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
 .rota-titulo {
     font-weight: 600;
     font-size: 1.05rem;

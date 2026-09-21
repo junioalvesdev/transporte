@@ -53,8 +53,11 @@ function criarCartaoViagemBusca(viagem) {
     const chegada = viagem.dataHoraChegadaEstimada ? new Date(viagem.dataHoraChegadaEstimada) : null;
     const vagasClasse = viagem.vagasDisponiveis <= 3 ? "baixa" : "";
 
+    const jaSolicitei = Boolean(viagem.minhaSolicitacaoId);
+
     const cartao = document.createElement("div");
-    cartao.className = "cartao cartao-viagem d-flex justify-content-between align-items-center flex-wrap gap-3";
+    cartao.className = "cartao cartao-viagem d-flex justify-content-between align-items-center flex-wrap gap-3"
+        + (jaSolicitei ? " cartao-viagem-ja-solicitada" : "");
     cartao.innerHTML = `
         <div>
             <div class="rota-titulo">${viagem.origem.toUpperCase()} &rarr; ${viagem.destino.toUpperCase()}</div>
@@ -67,13 +70,23 @@ function criarCartaoViagemBusca(viagem) {
         </div>
         <div class="text-end">
             <span class="badge badge-vagas ${vagasClasse} mb-2 d-inline-block">${viagem.vagasDisponiveis} lugares disponiveis</span>
-            <div>
-                <button class="btn btn-ovg-principal btn-sm" data-viagem-id="${viagem.viagemId}">Solicitar vaga</button>
+            <div class="d-flex flex-column align-items-end gap-2">
+                ${jaSolicitei
+                    ? `<span class="badge badge-ja-solicitada"><i class="bi bi-check-circle-fill me-1"></i>Vaga solicitada</span>
+                       <button class="btn btn-ovg-secundario btn-sm" data-acao="cancelar-vaga">Cancelar vaga</button>`
+                    : `<button class="btn btn-ovg-principal btn-sm" data-acao="solicitar-vaga">Solicitar vaga</button>`}
             </div>
         </div>
     `;
 
-    cartao.querySelector("button").addEventListener("click", () => solicitarVagaBusca(viagem));
+    const botaoSolicitar = cartao.querySelector('[data-acao="solicitar-vaga"]');
+    if (botaoSolicitar) {
+        botaoSolicitar.addEventListener("click", () => solicitarVagaBusca(viagem));
+    }
+    const botaoCancelar = cartao.querySelector('[data-acao="cancelar-vaga"]');
+    if (botaoCancelar) {
+        botaoCancelar.addEventListener("click", () => cancelarVagaBusca(viagem));
+    }
     return cartao;
 }
 
@@ -91,6 +104,32 @@ async function solicitarVagaBusca(viagem) {
         // se a lista de "Minhas solicitacoes" ja foi aberta antes, atualiza ela tambem
         if (typeof minhasSolicitacoesCarregadas !== "undefined" && minhasSolicitacoesCarregadas) {
             await carregarMinhasSolicitacoes();
+        }
+        // a viagem pode ter lotado agora — atualiza a grade do calendario atras
+        // do modal pra pilula mudar de cor na hora, sem esperar o auto-refresh
+        if (typeof renderizar === "function") {
+            await renderizar();
+        }
+    } catch (erro) {
+        Ui.mostrarToast(erro.message, "erro");
+    }
+}
+
+async function cancelarVagaBusca(viagem) {
+    const confirmou = await Ui.confirmarAcao("Cancelar sua vaga nesta viagem?", "Cancelar vaga");
+    if (!confirmou) {
+        return;
+    }
+
+    try {
+        await Api.patch(`/api/solicitacoes/${viagem.minhaSolicitacaoId}/cancelar`);
+        Ui.mostrarToast("Vaga cancelada.");
+        await buscarViagensCalendario();
+        if (typeof minhasSolicitacoesCarregadas !== "undefined" && minhasSolicitacoesCarregadas) {
+            await carregarMinhasSolicitacoes();
+        }
+        if (typeof renderizar === "function") {
+            await renderizar();
         }
     } catch (erro) {
         Ui.mostrarToast(erro.message, "erro");

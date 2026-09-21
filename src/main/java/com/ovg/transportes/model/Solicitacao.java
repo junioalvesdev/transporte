@@ -141,6 +141,12 @@ public class Solicitacao extends Auditavel {
     }
 
     public void cancelar() {
+        // idempotente de proposito: clicar em "cancelar" de novo numa solicitacao
+        // que ja esta cancelada (ex.: duplo clique, ou tela desatualizada) nao
+        // deveria estourar erro pra quem so queria garantir que ja tava cancelada
+        if (status == StatusSolicitacao.CANCELADA) {
+            return;
+        }
         if (dataHoraDesejada.isBefore(LocalDateTime.now())) {
             throw new NegocioException("Nao e possivel cancelar uma solicitacao cuja viagem ja deveria ter saido");
         }

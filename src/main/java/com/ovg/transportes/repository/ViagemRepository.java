@@ -4,21 +4,40 @@ import com.ovg.transportes.model.StatusViagem;
 import com.ovg.transportes.model.Viagem;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.persistence.LockModeType;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ViagemRepository extends JpaRepository<Viagem, Long> {
+
+    // Trava a linha da viagem ate o fim da transacao (SELECT ... FOR UPDATE) —
+    // usada antes de checar/ocupar vaga, pra duas pessoas nao conseguirem
+    // "passar" pela checagem de vaga disponivel ao mesmo tempo e as duas
+    // ganharem a ultima vaga (a segunda fica esperando a primeira transacao
+    // terminar, e ai ve a ocupacao ja atualizada).
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT v FROM Viagem v WHERE v.id = :id")
+    Optional<Viagem> buscarPorIdComTravaDeEscrita(@Param("id") Long id);
 
     // Busca simplificada por dia (decidido apos feedback de uso): a tela
     // "Viagens disponiveis" lista tudo que esta aberto naquele dia, sem exigir
     // que o usuario ja saiba origem/destino de antemao — cada card mostra sua
-    // propria rota, e quem procura decide se serve.
+    // propria rota, e quem procura decide se serve. Inclui LOTADA tambem —
+    // sem isso, a viagem some da lista assim que a ultima vaga e ocupada,
+    // mesmo pra quem acabou de pegar essa vaga (o service filtra na sequencia
+    // quem realmente pode ver: tem vaga OU ja e participante).
     @Query("""
         SELECT v FROM Viagem v
-        WHERE v.status = com.ovg.transportes.model.StatusViagem.ABERTA_PARA_APROVEITAMENTO
+        WHERE v.status IN (
+            com.ovg.transportes.model.StatusViagem.ABERTA_PARA_APROVEITAMENTO,
+            com.ovg.transportes.model.StatusViagem.LOTADA
+        )
           AND v.dataHoraSaida BETWEEN :inicio AND :fim
         """)
     List<Viagem> buscarAbertasNoPeriodo(
