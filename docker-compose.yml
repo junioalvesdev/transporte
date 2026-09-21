@@ -1,0 +1,63 @@
+# Sobe o sistema com um banco NOVO e vazio (schema + dados genericos: cidades
+# do IBGE, tipos de veiculo, unidades administrativas de exemplo) e o login
+# "Normal" (admin/admin) ja habilitado — pra quem clonar o repo conseguir
+# testar sem precisar de acesso a um Active Directory de verdade. Sem nenhum
+# dado real de instituicao nenhuma aqui.
+#
+# Uso:
+#   docker compose up --build
+#
+# Depois, entre em http://localhost:8080, aba "Normal (teste)", usuario e
+# senha "admin".
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: transporte_demo
+      MYSQL_USER: transporte_demo
+      MYSQL_PASSWORD: transporte_demo
+      MYSQL_ROOT_PASSWORD: troque-me
+    ports:
+      - "3306:3306"
+    volumes:
+      - transporte_demo_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: transporte_demo
+      DB_USER: transporte_demo
+      DB_PASSWORD: transporte_demo
+      # em branco de proposito: preencha com o seu servidor AD se quiser usar
+      # o login LDAP de verdade (ex.: LDAP_URL=ldap://10.0.0.1, LDAP_DOMINIO=suaempresa.com.br)
+      LDAP_URL: ${LDAP_URL:-}
+      LDAP_DOMINIO: ${LDAP_DOMINIO:-}
+      # liga o login "Normal" (admin/admin) — so faz sentido aqui, banco sem
+      # dado real nenhum. NUNCA ligar isso num deploy com AD real por tras.
+      AUTH_TESTE_HABILITADO: "true"
+    ports:
+      - "8080:8080"
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:8080"
+
+volumes:
+  transporte_demo_db_data:

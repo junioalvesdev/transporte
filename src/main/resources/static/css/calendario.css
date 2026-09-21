@@ -1,0 +1,483 @@
+/* Visual inspirado no calendario do sistema legado (layout estilo Google
+   Calendar: grade de mes com "pilulas" de evento coloridas por status),
+   adaptado a paleta do sistema. */
+
+.calendario-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.calendario-sidebar {
+    width: 256px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.calendario-principal {
+    flex: 1;
+    min-width: 0;
+}
+
+.botao-criar-reserva {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: var(--ovg-roxo);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.botao-criar-reserva:hover {
+    opacity: 0.92;
+}
+
+/* Mini calendario da lateral */
+.mini-calendario {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.mini-calendario-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 8px;
+    text-transform: capitalize;
+}
+
+.mini-calendario-dias-semana,
+.mini-calendario-grade {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.mini-calendario-dias-semana span {
+    display: block;
+    text-align: center;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #9aa0a6;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+}
+
+.mini-dia {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    font-size: 0.75rem;
+    color: var(--texto);
+    border-radius: 50%;
+}
+
+.mini-dia.fora-do-mes {
+    color: #c7c7cf;
+}
+
+.mini-dia.hoje {
+    background: var(--ovg-roxo);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Filtro de status na lateral, substitui a legenda de cores */
+.filtro-status {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.filtro-status-titulo {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #5f6368;
+    margin-bottom: 10px;
+}
+
+.filtro-status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 0.85rem;
+    color: var(--texto);
+    cursor: pointer;
+}
+
+.filtro-status-item input {
+    accent-color: var(--ovg-roxo);
+    cursor: pointer;
+}
+
+.filtro-status-bolinha {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+    .calendario-layout {
+        flex-direction: column;
+    }
+    .calendario-sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .mini-calendario,
+    .filtro-status {
+        flex: 1;
+        min-width: 220px;
+    }
+}
+
+.calendario-cabecalho {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 14px 14px 0 0;
+}
+
+.calendario-cabecalho-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.calendario-cabecalho > .d-flex {
+    justify-self: end;
+    flex-wrap: wrap;
+}
+
+/* Filtro "Buscar viagens": fica no meio do cabecalho, entre o titulo do mes e
+   os botoes de Ordem de Trafego/Semana-Mes. Divulgado como novidade (badge
+   "Novo") porque e a forma de "pegar carona" numa viagem ja aberta, sem
+   esperar aprovacao — funcionalidade que o sistema legado nao tinha. */
+.calendario-busca-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    justify-self: center;
+}
+
+.calendario-busca-legenda {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--ovg-roxo);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-novidade {
+    background: var(--ovg-rosa);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 10px;
+    animation: cor-novidade 1.4s ease-in-out infinite;
+}
+
+@keyframes cor-novidade {
+    0%, 100% { background: var(--ovg-rosa); }
+    50% { background: var(--ovg-roxo); }
+}
+
+/* borda pulsante no botao "Buscar viagens", nao so no selo "Novo" */
+.calendario-busca-viagem button[type="submit"] {
+    border-width: 2px;
+    animation: pulso-borda-novidade 1.4s ease-in-out infinite;
+}
+
+@keyframes pulso-borda-novidade {
+    0%, 100% { border-color: var(--ovg-rosa); box-shadow: 0 0 0 0 rgba(242, 136, 176, 0.55); }
+    50% { border-color: var(--ovg-roxo); box-shadow: 0 0 0 4px rgba(242, 136, 176, 0); }
+}
+
+.calendario-busca-viagem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.calendario-busca-viagem input[type="date"] {
+    width: 145px;
+}
+
+.calendario-busca-viagem input[type="number"] {
+    width: 64px;
+}
+
+@media (max-width: 992px) {
+    .calendario-cabecalho {
+        grid-template-columns: 1fr;
+    }
+    .calendario-busca-viagem,
+    .calendario-cabecalho > .d-flex {
+        justify-self: start;
+    }
+}
+
+.calendario-icone {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ovg-roxo);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.calendario-titulo {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--texto);
+    margin: 0;
+}
+
+.calendario-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.botao-nav-circular {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: #5f6368;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.botao-nav-circular:hover {
+    background: var(--fundo);
+}
+
+.botao-hoje {
+    border: none;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--ovg-rosa);
+    color: #fff;
+    cursor: pointer;
+}
+
+.botao-hoje:hover {
+    opacity: 0.9;
+}
+
+.calendario-modo {
+    display: flex;
+    gap: 4px;
+}
+
+.calendario-container {
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* Grade de mes */
+.mes-cabecalho-dias {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--fundo);
+    border-bottom: 1px solid var(--borda);
+}
+
+.mes-dia-semana {
+    padding: 10px 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #5f6368;
+    text-transform: uppercase;
+}
+
+.mes-grade {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.mes-celula {
+    border-left: 1px solid var(--borda);
+    border-top: 1px solid var(--borda);
+    background: #fff;
+    min-height: 110px;
+    min-width: 0;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.mes-celula:nth-child(7n + 1) {
+    border-left: none;
+}
+
+.mes-celula.fora-do-mes {
+    background: var(--fundo);
+}
+
+.mes-celula.fora-do-mes .mes-dia-numero {
+    color: #9aa0a6;
+}
+
+.mes-celula.hoje {
+    background: #f7ecf3;
+}
+
+.mes-dia-numero {
+    font-size: 0.85rem;
+    color: var(--texto);
+    margin-bottom: 2px;
+}
+
+.mes-celula.hoje .mes-dia-numero {
+    color: var(--ovg-rosa);
+    font-weight: 700;
+}
+
+.evento-pilula {
+    background: #6c757d;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.evento-pilula:hover {
+    filter: brightness(0.92);
+}
+
+/* Esquema de cores inspirado no sistema legado: verde = disponivel (Planejada
+   e Aberta p/ aproveitamento sao as duas faces do "disponivel" — a segunda e
+   so a viagem disponivel tambem aberta pra mais gente entrar), azul =
+   cancelado. Lotada/Em andamento/Concluida nao existiam no legado (esse nivel
+   de acompanhamento e novo aqui), entao ficam em tons derivados. */
+.evento-pilula.cor-planejada { background: #4caf50; }
+.evento-pilula.cor-aberta { background: #81c784; }
+.evento-pilula.cor-lotada { background: #009688; }
+.evento-pilula.cor-andamento { background: #1b5e20; }
+.evento-pilula.cor-concluida { background: var(--ovg-roxo); }
+.evento-pilula.cor-cancelada { background: #1a73e8; }
+
+/* Urgente (marcacao da solicitacao, nao um status de viagem): destaca com uma
+   borda vermelha por cima da cor normal do status, igual ao vermelho do
+   sistema legado, sem esconder o status real da viagem. */
+.evento-pilula.urgente {
+    box-shadow: inset 0 0 0 2px #f44336;
+}
+
+.mais-eventos {
+    background: var(--fundo);
+    color: #5f6368;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.mais-eventos:hover {
+    text-decoration: underline;
+}
+
+/* Grade de semana: mesma pilula de evento, uma coluna por dia */
+.semana-grade {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.semana-coluna {
+    border-left: 1px solid var(--borda);
+    padding: 10px 8px;
+    min-height: 220px;
+}
+
+.semana-coluna:nth-child(7n + 1) {
+    border-left: none;
+}
+
+.semana-cabecalho {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--texto);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.semana-cabecalho.hoje {
+    color: var(--ovg-rosa);
+}
+
+.semana-coluna .evento-pilula {
+    display: block;
+    margin-bottom: 5px;
+    white-space: normal;
+    line-height: 1.3;
+    padding: 5px 7px;
+}
+
+@media (max-width: 768px) {
+    .mes-celula {
+        min-height: 70px;
+    }
+    .mes-dia-semana {
+        font-size: 0.65rem;
+    }
+    .calendario-titulo {
+        font-size: 1rem;
+    }
+}

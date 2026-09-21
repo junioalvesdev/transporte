@@ -1,0 +1,27 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+*.log
+
+# Imagens institucionais (banner, diagramas de veiculo) usadas so na
+# Ordem de Trafego — opcionais, carregadas via classpath se existirem, nunca
+# comitadas. Ficam fora de static/ de proposito: nao viram URL publica.
+src/main/resources/img/*
+!src/main/resources/img/.gitkeep
+
+# Migrations com dados reais importados do sistema legado (nomes, telefones,
+# e-mails de funcionarios e beneficiarios da instituicao) — rodam so localmente/em
+# producao, nunca comitadas. Um clone novo do repo aplica so o schema e os
+# seeds genericos (db/migration/), sem historico real nenhum.
+db-legado-privado/*.sql
+!db-legado-privado/.gitkeep
+
+# Compose que aponta pro banco real da instituicao (dados reais no volume) — so pra
+# uso local/producao, nunca vai pro git. O docker-compose.yml "oficial" do
+# repositorio sobe sempre com banco vazio (ver secao "Sobre os dados" no README).
+docker-compose.local.yml
+
+# config local do meu editor/ferramenta, nao faz parte do projeto
+.claude/

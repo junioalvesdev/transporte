@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: transportes
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:transportes}?useUnicode=true&characterEncoding=utf8&serverTimezone=America/Sao_Paulo
+    username: ${DB_USER:transportes}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    # migrations com dados reais da instituicao (importados do sistema legado) ficam
+    # fora de src/, num diretorio nao versionado (ver .gitignore) — um clone
+    # novo do repo so aplica as migrations de schema/seed generico abaixo.
+    locations: classpath:db/migration,filesystem:./db-legado-privado
+    # historico ja aplicado (V4, V6-V11) fica registrado no banco mesmo que o
+    # .sql de origem nao exista mais nesta maquina/imagem — sem isso, o Flyway
+    # recusa a startar por nao achar o arquivo de uma migration ja aplicada.
+    ignore-migration-patterns: '*:missing'
+  mail:
+    host: ${SMTP_HOST:smtp.office365.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# Conta de servico dedicada ao envio de e-mail — NUNCA a senha do usuario logado
+# (diferente do legado, que reaproveitava a senha da sessao para SMTP).
+
+transportes:
+  ldap:
+    # em branco de proposito: preencha com o seu servidor AD antes de usar o
+    # login LDAP (ex.: LDAP_URL=ldap://10.0.0.1, LDAP_DOMINIO=suaempresa.com.br)
+    url: ${LDAP_URL:}
+    dominio: ${LDAP_DOMINIO:}
+  limiar-urgencia-horas: 2
+  # login "Normal" (admin/admin) pra testar sem AD — NUNCA true em producao
+  auth-teste:
+    habilitado: ${AUTH_TESTE_HABILITADO:false}
+
+server:
+  port: ${SERVER_PORT:8080}

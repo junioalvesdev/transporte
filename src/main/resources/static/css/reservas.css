@@ -1,0 +1,104 @@
+/* "Lista de Reservas" — visual em tabela agrupada por mes, inspirado na tela
+   equivalente do sistema legado. */
+
+.reservas-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.reservas-icone {
+    font-size: 1.8rem;
+    color: var(--ovg-roxo);
+}
+
+.reservas-barra-ferramentas {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #fff;
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.botao-criar-reserva {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 24px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--ovg-roxo);
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.botao-criar-reserva:hover {
+    opacity: 0.92;
+}
+
+.reservas-grupo-mes {
+    padding: 0;
+    overflow: hidden;
+}
+
+.reservas-grupo-cabecalho {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    background: var(--fundo);
+    padding: 14px 18px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--texto);
+    cursor: pointer;
+}
+
+.reservas-grupo-cabecalho[aria-expanded="false"] .bi-chevron-down {
+    transform: rotate(-90deg);
+}
+
+.reservas-grupo-cabecalho .bi-chevron-down {
+    transition: transform 0.15s ease;
+}
+
+.reservas-tabela {
+    font-size: 0.85rem;
+    margin-bottom: 0;
+}
+
+.reservas-tabela thead {
+    background: #fff;
+}
+
+.reservas-tabela th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: #5f6368;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.reservas-descricao button {
+    text-align: left;
+    color: var(--ovg-roxo);
+}
+
+.status-badge {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
