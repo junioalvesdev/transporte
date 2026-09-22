@@ -11,11 +11,7 @@
     <main class="container" style="max-width: 380px;">
         <div class="cartao cartao-busca">
             <h1 class="h5 mb-3 text-center">Central de Transportes</h1>
-            <div class="btn-group btn-group-sm w-100 mb-3" id="grupo-modo-login">
-                <button type="button" class="btn btn-ovg-secundario ativo" data-modo="ldap">LDAP</button>
-                <button type="button" class="btn btn-ovg-secundario" data-modo="normal">Normal (teste)</button>
-            </div>
-            <p class="text-muted small text-center mb-4" id="texto-modo-login">Entre com seu usuario de rede (o mesmo do computador)</p>
+            <p class="text-muted small text-center mb-4">Entre com seu usuario de rede (o mesmo do computador)</p>
             <form id="form-login">
                 <div class="mb-3">
                     <label class="form-label" for="login">Usuario</label>
@@ -33,29 +29,6 @@
 
     <script src="js/api.js"></script>
     <script>
-        // "Normal" so funciona se o backend tiver a flag de teste ligada (ver
-        // TesteAuthenticationProvider) — aqui e so um atalho pra preencher os
-        // campos, a validacao de verdade e sempre no servidor.
-        document.querySelectorAll('#grupo-modo-login [data-modo]').forEach((botao) => {
-            botao.addEventListener("click", () => {
-                document.querySelectorAll('#grupo-modo-login [data-modo]').forEach((b) => b.classList.remove("ativo"));
-                botao.classList.add("ativo");
-                const campoLogin = document.getElementById("login");
-                const campoSenha = document.getElementById("senha");
-                if (botao.dataset.modo === "normal") {
-                    document.getElementById("texto-modo-login").textContent =
-                        "Login de teste (precisa estar habilitado no servidor)";
-                    campoLogin.value = "admin";
-                    campoSenha.value = "admin";
-                } else {
-                    document.getElementById("texto-modo-login").textContent =
-                        "Entre com seu usuario de rede (o mesmo do computador)";
-                    campoLogin.value = "";
-                    campoSenha.value = "";
-                }
-            });
-        });
-
         document.getElementById("form-login").addEventListener("submit", async (evento) => {
             evento.preventDefault();
             const mensagemErro = document.getElementById("mensagem-erro");
