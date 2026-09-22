@@ -1,6 +1,7 @@
 package com.ovg.transportes.controller;
 
 import com.ovg.transportes.dto.AprovarSolicitacaoRequestDTO;
+import com.ovg.transportes.dto.AtualizarSolicitacaoRequestDTO;
 import com.ovg.transportes.dto.PaginaDTO;
 import com.ovg.transportes.dto.ReprovarSolicitacaoRequestDTO;
 import com.ovg.transportes.dto.SolicitacaoRequestDTO;
@@ -12,6 +13,7 @@ import com.ovg.transportes.service.ViagemService;
 
 import jakarta.validation.Valid;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
@@ -69,6 +74,22 @@ public class SolicitacaoController {
         @RequestParam(defaultValue = "1000") int tamanho
     ) {
         return solicitacaoService.listarTodas(PageRequest.of(pagina, tamanho));
+    }
+
+    // Calendario: solicitacoes que ainda nao viraram viagem (pendente,
+    // reprovada, cancelada) no periodo visivel — qualquer usuario autenticado
+    // pode chamar, mas o service so devolve as dele mesmo quando nao e TRANSPORTE
+    @PatchMapping("/{id}")
+    public SolicitacaoResponseDTO atualizar(@PathVariable Long id, @RequestBody @Valid AtualizarSolicitacaoRequestDTO requisicao) {
+        return solicitacaoService.atualizar(id, requisicao);
+    }
+
+    @GetMapping("/calendario")
+    public List<SolicitacaoResponseDTO> calendario(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fim
+    ) {
+        return solicitacaoService.listarNoPeriodoParaCalendario(inicio, fim);
     }
 
     @PatchMapping("/{id}/cancelar")

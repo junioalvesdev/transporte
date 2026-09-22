@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public record SolicitacaoResponseDTO(
     Long id,
     String solicitanteNome,
+    String solicitanteLogin,
     Long cidadeOrigemId,
     Long cidadeDestinoId,
     Long localOrigemId,
@@ -38,6 +39,7 @@ public record SolicitacaoResponseDTO(
         return new SolicitacaoResponseDTO(
             solicitacao.getId(),
             solicitacao.getSolicitante().getNome(),
+            solicitacao.getSolicitante().getLoginAd(),
             solicitacao.getCidadeOrigem().getId(),
             solicitacao.getCidadeDestino().getId(),
             solicitacao.getLocalOrigem() != null ? solicitacao.getLocalOrigem().getId() : null,

@@ -127,6 +127,39 @@ public class Solicitacao extends Auditavel {
         this.urgente = urgente;
     }
 
+    /**
+     * Corrige os dados de uma solicitacao ainda pendente — ex.: a pessoa errou
+     * o horario ou a finalidade ao criar. So faz sentido enquanto ninguem
+     * decidiu nada sobre ela ainda (o service e quem garante isso).
+     */
+    public void atualizarDados(
+        LocalAdministrativo localOrigem,
+        Cidade cidadeOrigem,
+        String descricaoOrigem,
+        LocalAdministrativo localDestino,
+        Cidade cidadeDestino,
+        String descricaoDestino,
+        LocalDateTime dataHoraDesejada,
+        LocalDateTime dataHoraRetornoDesejada,
+        Integer qtdPassageiros,
+        String telefoneContato,
+        String finalidade,
+        String observacoes
+    ) {
+        this.localOrigem = localOrigem;
+        this.cidadeOrigem = cidadeOrigem;
+        this.descricaoOrigem = descricaoOrigem;
+        this.localDestino = localDestino;
+        this.cidadeDestino = cidadeDestino;
+        this.descricaoDestino = descricaoDestino;
+        this.dataHoraDesejada = dataHoraDesejada;
+        this.dataHoraRetornoDesejada = dataHoraRetornoDesejada;
+        this.qtdPassageiros = qtdPassageiros;
+        this.telefoneContato = telefoneContato;
+        this.finalidade = finalidade;
+        this.observacoes = observacoes;
+    }
+
     public void aprovar() {
         transicionarPara(StatusSolicitacao.APROVADA);
     }

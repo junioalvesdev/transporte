@@ -12,6 +12,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        # sem isso, cada relacao lazy (veiculo, motorista, participantes, rota)
+        # de cada linha de uma lista vira uma consulta SEPARADA (N+1) — o
+        # calendario e a lista de reservas carregam varias dezenas/centenas de
+        # linhas de uma vez, e cada uma delas tem 4-5 relacoes lazy, entao sem
+        # o batch fetch isso vira centenas de idas ao banco por tela carregada.
+        # Com isso, o Hibernate agrupa essas buscas em lotes de ate 25 de uma vez.
+        default_batch_fetch_size: 25
   flyway:
     enabled: true
     baseline-on-migrate: true

@@ -2,6 +2,7 @@ package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.NegocioException;
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
+import com.ovg.transportes.dto.AtualizarSolicitacaoRequestDTO;
 import com.ovg.transportes.dto.PaginaDTO;
 import com.ovg.transportes.dto.ReprovarSolicitacaoRequestDTO;
 import com.ovg.transportes.dto.SolicitacaoRequestDTO;
@@ -17,6 +18,7 @@ import com.ovg.transportes.repository.SolicitacaoRepository;
 import com.ovg.transportes.repository.ViagemParticipanteRepository;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -83,6 +88,44 @@ public class SolicitacaoService {
         return SolicitacaoResponseDTO.de(solicitacaoRepository.save(solicitacao));
     }
 
+    // Corrige uma solicitacao ainda pendente (ex.: horario/finalidade errados
+    // ao criar) — mesma regra de quem pode mexer que o cancelar: o dono, ou
+    // TRANSPORTE. So faz sentido enquanto nada foi decidido sobre ela ainda.
+    @Transactional
+    public SolicitacaoResponseDTO atualizar(Long id, AtualizarSolicitacaoRequestDTO requisicao) {
+        Solicitacao solicitacao = buscarPorId(id);
+        Usuario usuarioLogado = usuarioAutenticadoProvider.obterUsuarioLogado();
+
+        boolean ehDonoDaSolicitacao = solicitacao.getSolicitante().getId().equals(usuarioLogado.getId());
+        boolean ehDoDepartamentoDeTransportes = usuarioLogado.temPerfil("TRANSPORTE");
+        if (!ehDonoDaSolicitacao && !ehDoDepartamentoDeTransportes) {
+            throw new NegocioException("Voce nao tem permissao para editar esta solicitacao");
+        }
+        if (solicitacao.getStatus() != StatusSolicitacao.PENDENTE) {
+            throw new NegocioException("So e possivel editar uma solicitacao enquanto ela estiver pendente");
+        }
+
+        PontoResolvido origem = resolverPonto("origem", requisicao.localOrigemId(), requisicao.cidadeOrigemId(), requisicao.descricaoOrigem());
+        PontoResolvido destino = resolverPonto("destino", requisicao.localDestinoId(), requisicao.cidadeDestinoId(), requisicao.descricaoDestino());
+
+        solicitacao.atualizarDados(
+            origem.local(),
+            origem.cidade(),
+            origem.descricao(),
+            destino.local(),
+            destino.cidade(),
+            destino.descricao(),
+            requisicao.dataHoraDesejada(),
+            requisicao.dataHoraRetornoDesejada(),
+            requisicao.qtdPassageiros(),
+            requisicao.telefoneContato(),
+            requisicao.finalidade(),
+            requisicao.observacoes()
+        );
+
+        return SolicitacaoResponseDTO.de(solicitacao);
+    }
+
     public PaginaDTO<SolicitacaoResponseDTO> listarMinhas(Pageable pageable) {
         Usuario solicitante = usuarioAutenticadoProvider.obterUsuarioLogado();
         return PaginaDTO.de(
@@ -100,20 +143,48 @@ public class SolicitacaoService {
     }
 
     // "Lista de Reservas" (inspirada na tela equivalente do sistema legado):
-    // todas as solicitacoes juntas, de qualquer status, com a placa do veiculo
-    // quando ja existe uma viagem vinculada
+    // so o mes atual, de qualquer status, com a placa do veiculo quando ja
+    // existe uma viagem vinculada — a tabela real tem dezenas de milhares de
+    // linhas migradas do legado, e a tela so agrupa/mostra um mes por vez, entao
+    // nao faz sentido trazer tudo do banco so pra descartar o resto no front.
     @PreAuthorize("hasRole('TRANSPORTE')")
     public PaginaDTO<SolicitacaoResponseDTO> listarTodas(Pageable pageable) {
+        LocalDateTime inicioMes = LocalDateTime.now().withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime fimMes = inicioMes.plusMonths(1);
+        Page<Solicitacao> pagina = solicitacaoRepository.findByDataHoraDesejadaBetweenOrderByIdDesc(inicioMes, fimMes, pageable);
+
+        // placas de todas as solicitacoes da pagina numa unica consulta, em vez
+        // de uma consulta por linha (N+1 que ficava mais lento quanto maior a
+        // lista — bem perceptivel com centenas de solicitacoes no mes)
+        List<Long> idsDaPagina = pagina.getContent().stream().map(Solicitacao::getId).toList();
+        Map<Long, String> placaPorSolicitacaoId = idsDaPagina.isEmpty()
+            ? Map.of()
+            : viagemParticipanteRepository.findBySolicitacaoIdIn(idsDaPagina).stream()
+                .collect(Collectors.toMap(
+                    participante -> participante.getSolicitacao().getId(),
+                    participante -> participante.getViagem().getVeiculo().getPlaca()
+                ));
+
         return PaginaDTO.de(
-            solicitacaoRepository.findAllByOrderByIdDesc(pageable),
-            solicitacao -> SolicitacaoResponseDTO.de(solicitacao, buscarPlacaVinculada(solicitacao.getId()))
+            pagina,
+            solicitacao -> SolicitacaoResponseDTO.de(solicitacao, placaPorSolicitacaoId.get(solicitacao.getId()))
         );
     }
 
-    private String buscarPlacaVinculada(Long solicitacaoId) {
-        return viagemParticipanteRepository.findBySolicitacaoId(solicitacaoId)
-            .map(participante -> participante.getViagem().getVeiculo().getPlaca())
-            .orElse(null);
+    // Calendario: mostra solicitacoes que ainda NAO viraram viagem (pendente,
+    // reprovada ou cancelada) no periodo visivel, pra nao sumir do calendario
+    // ate que o Departamento de Transportes decida algo — aprovada/atendida ja
+    // aparecem atraves da propria viagem vinculada.
+    private static final List<StatusSolicitacao> STATUS_SEM_VIAGEM_VINCULADA =
+        List.of(StatusSolicitacao.PENDENTE, StatusSolicitacao.REPROVADA, StatusSolicitacao.CANCELADA);
+
+    public List<SolicitacaoResponseDTO> listarNoPeriodoParaCalendario(LocalDateTime inicio, LocalDateTime fim) {
+        Usuario usuarioLogado = usuarioAutenticadoProvider.obterUsuarioLogado();
+        List<Solicitacao> solicitacoes = usuarioLogado.temPerfil("TRANSPORTE")
+            ? solicitacaoRepository.findByDataHoraDesejadaBetweenAndStatusInOrderByDataHoraDesejada(inicio, fim, STATUS_SEM_VIAGEM_VINCULADA)
+            : solicitacaoRepository.findBySolicitanteIdAndDataHoraDesejadaBetweenAndStatusInOrderByDataHoraDesejada(
+                usuarioLogado.getId(), inicio, fim, STATUS_SEM_VIAGEM_VINCULADA);
+        return solicitacoes.stream().map(SolicitacaoResponseDTO::de).toList();
     }
 
     @Transactional
@@ -121,10 +192,11 @@ public class SolicitacaoService {
         Solicitacao solicitacao = buscarPorId(id);
         Usuario usuarioLogado = usuarioAutenticadoProvider.obterUsuarioLogado();
 
+        // so quem fez o pedido pode cancela-lo — TRANSPORTE tem "Reprovar" (com
+        // motivo) pra recusar uma solicitacao de outra pessoa, nao cancelar
         boolean ehDonoDaSolicitacao = solicitacao.getSolicitante().getId().equals(usuarioLogado.getId());
-        boolean ehDoDepartamentoDeTransportes = usuarioLogado.temPerfil("TRANSPORTE");
-        if (!ehDonoDaSolicitacao && !ehDoDepartamentoDeTransportes) {
-            throw new NegocioException("Voce nao tem permissao para cancelar esta solicitacao");
+        if (!ehDonoDaSolicitacao) {
+            throw new NegocioException("Somente quem fez a solicitacao pode cancela-la");
         }
 
         solicitacao.cancelar();

@@ -413,6 +413,13 @@
 .evento-pilula.cor-concluida { background: var(--ovg-roxo); }
 .evento-pilula.cor-cancelada { background: #1a73e8; }
 
+/* Solicitacoes que ainda nao viraram viagem (sem veiculo/motorista definido) —
+   cores propositalmente diferentes das de status de viagem acima, pra nao
+   confundir "ainda so um pedido" com "viagem ja confirmada". */
+.evento-pilula.cor-solicitacao-pendente { background: #f5a623; }
+.evento-pilula.cor-solicitacao-reprovada { background: #d32f2f; }
+.evento-pilula.cor-solicitacao-cancelada { background: #9e9e9e; }
+
 /* Urgente (marcacao da solicitacao, nao um status de viagem): destaca com uma
    borda vermelha por cima da cor normal do status, igual ao vermelho do
    sistema legado, sem esconder o status real da viagem. */

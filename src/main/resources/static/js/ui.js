@@ -41,7 +41,7 @@ const Ui = (() => {
                     <div class="modal-content">
                         <div class="modal-body pt-4">${mensagem}</div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-ovg-secundario" data-acao="cancelar">Cancelar</button>
+                            <button type="button" class="btn btn-ovg-secundario" data-acao="cancelar">Fechar</button>
                             <button type="button" class="btn btn-ovg-principal" data-acao="confirmar">${tituloBotaoConfirmar}</button>
                         </div>
                     </div>

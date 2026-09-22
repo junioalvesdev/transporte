@@ -71,5 +71,16 @@ public interface ViagemRepository extends JpaRepository<Viagem, Long> {
         @Param("fimProposto") LocalDateTime fimProposto
     );
 
-    List<Viagem> findByDataHoraSaidaBetween(LocalDateTime inicio, LocalDateTime fim);
+    // Calendario: JOIN FETCH veiculo/motorista pra nao virar uma consulta
+    // separada por viagem (essas duas relacoes sao usadas SEMPRE, pra toda
+    // viagem, ao montar o card/pilula) — participantes e rota continuam lazy,
+    // mas o default_batch_fetch_size (application.yml) agrupa essas em lotes
+    // em vez de uma consulta por viagem.
+    @Query("""
+        SELECT v FROM Viagem v
+        JOIN FETCH v.veiculo
+        JOIN FETCH v.motorista
+        WHERE v.dataHoraSaida BETWEEN :inicio AND :fim
+        """)
+    List<Viagem> findByDataHoraSaidaBetween(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 }
