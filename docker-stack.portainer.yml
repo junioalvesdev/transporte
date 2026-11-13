@@ -16,7 +16,7 @@
 
 services:
   backend:
-    image: ghcr.io/junioalvesdev/transporte-app:1.0
+    image: ghcr.io/junioalvesdev/transporte-app:1.1
     environment:
       DB_HOST: db
       DB_PORT: 3306
