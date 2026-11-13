@@ -1,6 +1,6 @@
 # Stack pra Docker Swarm (Portainer > Stacks > Add stack > Web editor).
-# A imagem "transporte:latest" e gerada no proprio servidor, em Portainer >
-# Images > Build image > Upload (transporte-build.tar.gz), no no
+# A imagem e gerada no proprio servidor, em Portainer > Images > Build a new
+# image > URL (https://github.com/junioalvesdev/transporte.git#<branch>), no no
 # lnx-portainer-manager1 — por isso backend e banco ficam presos nesse no:
 # a imagem e o volume do banco so existem la.
 #
@@ -13,7 +13,7 @@ services:
   backend:
     # a cada publicacao, gere a imagem com uma versao nova (transporte:1.1,
     # 1.2...) e troque aqui — com o mesmo nome o Swarm pode nao perceber a troca
-    image: transporte:latest
+    image: transporte:1.1
     environment:
       DB_HOST: db
       DB_PORT: 3306
