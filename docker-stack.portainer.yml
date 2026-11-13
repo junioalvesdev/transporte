@@ -1,8 +1,13 @@
-# Stack pra Docker Swarm (Portainer > Stacks > Add stack > Web editor).
-# A imagem e gerada no proprio servidor, em Portainer > Images > Build a new
-# image > URL (https://github.com/junioalvesdev/transporte.git#<branch>), no no
-# lnx-portainer-manager1 — por isso backend e banco ficam presos nesse no:
-# a imagem e o volume do banco so existem la.
+# Stack pra Docker Swarm, ligada a este repositorio (Portainer > Stacks > Add
+# stack > Repository, com "Automatic updates" ligado).
+#
+# Publicacao automatica:
+#   1. push na main
+#   2. o GitHub Actions (.github/workflows/publicar.yml) gera a imagem, publica
+#      em ghcr.io/junioalvesdev/transporte-app e troca a tag da linha
+#      "image:" abaixo, num commit dele
+#   3. o Portainer ve o commit novo e atualiza a stack sozinho, sem queda
+# NAO edite a linha "image:" na mao: quem cuida dela e o workflow.
 #
 # Variaveis (Portainer > "Environment variables" da stack):
 #   DB_PASSWORD, DB_ROOT_PASSWORD  - obrigatorias, senhas do MySQL
@@ -11,9 +16,7 @@
 
 services:
   backend:
-    # a cada publicacao, gere a imagem com uma versao nova (transporte:1.1,
-    # 1.2...) e troque aqui — com o mesmo nome o Swarm pode nao perceber a troca
-    image: transporte:1.1
+    image: ghcr.io/junioalvesdev/transporte-app:1.0
     environment:
       DB_HOST: db
       DB_PORT: 3306
@@ -27,16 +30,14 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD}
       # login de teste admin/admin: sempre desligado em producao
       AUTH_TESTE_HABILITADO: "false"
-      # mesmas migrations do docker-compose.local.yml — o banco importado do
-      # ambiente local ja tem esse historico do Flyway registrado
+      # mesmo historico do Flyway do banco que ja esta no servidor
       SPRING_FLYWAY_LOCATIONS: filesystem:./db-migration-historico-completo,filesystem:./db-legado-privado
-    ports:
-      - "8080:8080"
+    # sem "ports": o acesso e pelo Traefik (https://transportes.ovg.org.br)
     networks:
       - network
+      - traefik_proxy
     # "pronto" = ja aceita conexao na 8080 (o Spring so abre a porta depois
-    # de subir e rodar as migrations). start_period da folga pra primeira
-    # subida, que e lenta, nao contar como falha.
+    # de subir e rodar as migrations). start_period da folga pra subida lenta.
     healthcheck:
       test: ["CMD", "bash", "-c", ":> /dev/tcp/localhost/8080"]
       interval: 10s
@@ -44,9 +45,7 @@ services:
       retries: 3
       start_period: 90s
     deploy:
-      placement:
-        constraints:
-          - node.hostname == lnx-portainer-manager1
+      # sem placement: a imagem vem do ghcr, qualquer no consegue baixar
       # atualizacao sem queda: sobe o container novo, espera o healthcheck
       # passar e so entao desliga o antigo. Se o novo nao ficar saudavel,
       # volta sozinho pra versao anterior.
@@ -61,6 +60,13 @@ services:
       restart_policy:
         condition: on-failure
         delay: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.swarm.network=traefik_proxy"
+        - "traefik.http.routers.transportes.rule=Host(`transportes.ovg.org.br`)"
+        - "traefik.http.routers.transportes.entrypoints=websecure"
+        - "traefik.http.routers.transportes.tls=true"
+        - "traefik.http.services.transportes.loadbalancer.server.port=8080"
 
   db:
     image: mysql:8.0
@@ -87,6 +93,12 @@ networks:
   network:
     driver: overlay
     attachable: true
+  traefik_proxy:
+    external: true
 
 volumes:
   transportes_db_data:
+    # nome fixo = o volume criado pela stack antiga "transporte". Assim a
+    # stack nova usa o banco que ja existe, seja qual for o nome dela.
+    external: true
+    name: transporte_transportes_db_data

@@ -29,3 +29,4 @@ docker-compose.local.yml
 # pacote de build pro Portainer e dump do banco — tem dados reais, nunca comitar
 *.tar.gz
 *.sql.gz
+stack-portainer-antiga.yml
