@@ -1,0 +1,40 @@
+<!-- Modal "Novo veiculo". Incluido em veiculos/lista.html. -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="modal" class="modal fade" id="modal-novo-veiculo" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="/veiculos">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo veiculo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body row g-3">
+                <label class="col-6">
+                    <span class="form-label d-block">Placa</span>
+                    <input name="placa" class="form-control" maxlength="10" required>
+                </label>
+
+                <label class="col-6">
+                    <span class="form-label d-block">Capacidade</span>
+                    <input type="number" name="capacidade" min="1" class="form-control" required>
+                </label>
+
+                <label class="col-12">
+                    <span class="form-label d-block">Modelo</span>
+                    <input name="modelo" class="form-control" required>
+                </label>
+
+                <label class="col-12">
+                    <span class="form-label d-block">Tipo</span>
+                    <select name="tipoVeiculoId" class="form-select" required>
+                        <option th:each="o : ${pagina.tipos}" th:value="${o.valor}" th:text="${o.texto}"></option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-ovg-principal">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>

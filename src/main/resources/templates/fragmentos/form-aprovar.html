@@ -1,0 +1,73 @@
+<!-- Formularios de aprovar e reprovar uma solicitacao, usados dentro dos modais
+     de detalhe (Lista de Reservas, Solicitacoes pendentes e Calendario).
+
+     aprovar(form, url, saida, retorno, filtros):
+       form    = FormAprovarDTO (veiculos por tipo, motoristas, status da viagem)
+       url     = pra onde o form envia
+       saida / retorno = valores iniciais dos campos de data ("2026-10-20T08:00")
+       filtros = campo escondido pra voltar pra mesma tela
+     reprovar(url, filtros) -->
+<th:block xmlns:th="http://www.thymeleaf.org">
+
+    <!-- ============ Aprovar: cria a viagem com o veiculo/motorista escolhidos ============ -->
+    <form th:fragment="aprovar(form, url, saida, retorno, filtros)" method="post" th:action="${url}" class="row g-3">
+        <input type="hidden" name="filtros" th:value="${filtros}">
+
+        <label class="col-12">
+            <span class="form-label d-block">Veiculo</span>
+            <select name="veiculoId" class="form-select" required>
+                <option value="">Selecione</option>
+                <optgroup th:each="tipo : ${form.veiculosPorTipo}" th:label="${tipo.key}">
+                    <option th:each="o : ${tipo.value}" th:value="${o.valor}" th:text="${o.texto}"></option>
+                </optgroup>
+            </select>
+        </label>
+
+        <label class="col-12">
+            <span class="form-label d-block">Motorista</span>
+            <select name="motoristaId" class="form-select" required>
+                <option value="">Selecione</option>
+                <option th:each="o : ${form.motoristas}" th:value="${o.valor}" th:text="${o.texto}"></option>
+            </select>
+        </label>
+
+        <label class="col-6">
+            <span class="form-label d-block">Saida</span>
+            <input type="datetime-local" name="saida" class="form-control" required th:value="${saida}">
+        </label>
+
+        <label class="col-6">
+            <span class="form-label d-block">Retorno estimado</span>
+            <input type="datetime-local" name="retorno" class="form-control" required th:value="${retorno}">
+        </label>
+
+        <label th:if="${form.statusViagem}" class="col-12">
+            <span class="form-label d-block">Status da viagem</span>
+            <select name="statusViagem" class="form-select">
+                <option
+                    th:each="o : ${form.statusViagem}"
+                    th:value="${o.valor}"
+                    th:text="${o.texto}"
+                    th:selected="${o.selecionado}"></option>
+            </select>
+        </label>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-ovg-principal">Aprovar</button>
+        </div>
+    </form>
+
+    <!-- ============ Reprovar: motivo obrigatorio ============ -->
+    <form th:fragment="reprovar(url, filtros)" method="post" th:action="${url}" class="row g-2">
+        <input type="hidden" name="filtros" th:value="${filtros}">
+
+        <label class="col-12">
+            <span class="form-label d-block">Motivo da recusa (pra reprovar em vez de aprovar)</span>
+            <textarea name="motivoRecusa" class="form-control" rows="2" maxlength="500" required></textarea>
+        </label>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-ovg-secundario">Reprovar</button>
+        </div>
+    </form>
+</th:block>

@@ -1,0 +1,92 @@
+# Stack pra Docker Swarm (Portainer > Stacks > Add stack > Web editor).
+# A imagem "transporte:latest" e gerada no proprio servidor, em Portainer >
+# Images > Build image > Upload (transporte-build.tar.gz), no no
+# lnx-portainer-manager1 — por isso backend e banco ficam presos nesse no:
+# a imagem e o volume do banco so existem la.
+#
+# Variaveis (Portainer > "Environment variables" da stack):
+#   DB_PASSWORD, DB_ROOT_PASSWORD  - obrigatorias, senhas do MySQL
+#   LDAP_URL, LDAP_DOMINIO         - Active Directory
+#   SMTP_HOST, SMTP_USER, SMTP_PASSWORD - envio de e-mail (opcional)
+
+services:
+  backend:
+    # a cada publicacao, gere a imagem com uma versao nova (transporte:1.1,
+    # 1.2...) e troque aqui — com o mesmo nome o Swarm pode nao perceber a troca
+    image: transporte:latest
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: transportes
+      DB_USER: transportes
+      DB_PASSWORD: ${DB_PASSWORD}
+      LDAP_URL: ${LDAP_URL}
+      LDAP_DOMINIO: ${LDAP_DOMINIO}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      # login de teste admin/admin: sempre desligado em producao
+      AUTH_TESTE_HABILITADO: "false"
+      # mesmas migrations do docker-compose.local.yml — o banco importado do
+      # ambiente local ja tem esse historico do Flyway registrado
+      SPRING_FLYWAY_LOCATIONS: filesystem:./db-migration-historico-completo,filesystem:./db-legado-privado
+    ports:
+      - "8080:8080"
+    networks:
+      - network
+    # "pronto" = ja aceita conexao na 8080 (o Spring so abre a porta depois
+    # de subir e rodar as migrations). start_period da folga pra primeira
+    # subida, que e lenta, nao contar como falha.
+    healthcheck:
+      test: ["CMD", "bash", "-c", ":> /dev/tcp/localhost/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == lnx-portainer-manager1
+      # atualizacao sem queda: sobe o container novo, espera o healthcheck
+      # passar e so entao desliga o antigo. Se o novo nao ficar saudavel,
+      # volta sozinho pra versao anterior.
+      update_config:
+        order: start-first
+        failure_action: rollback
+        monitor: 60s
+      rollback_config:
+        order: start-first
+      # sem depends_on no Swarm: se subir antes do MySQL aceitar conexao,
+      # cai e o Swarm sobe de novo ate o banco estar pronto
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: transportes
+      MYSQL_USER: transportes
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: America/Sao_Paulo
+    volumes:
+      - transportes_db_data:/var/lib/mysql
+    networks:
+      - network
+    deploy:
+      # o volume do banco fica no disco de um no so — o MySQL precisa voltar
+      # sempre nesse mesmo no, senao sobe com um volume novo e vazio
+      placement:
+        constraints:
+          - node.hostname == lnx-portainer-manager1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  transportes_db_data:

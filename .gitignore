@@ -25,3 +25,7 @@ docker-compose.local.yml
 
 # config local do meu editor/ferramenta, nao faz parte do projeto
 .claude/
+
+# pacote de build pro Portainer e dump do banco — tem dados reais, nunca comitar
+*.tar.gz
+*.sql.gz

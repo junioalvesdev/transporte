@@ -1,6 +1,6 @@
 package com.ovg.transportes.service;
 
-import com.ovg.transportes.dto.FeedbackRequestDTO;
+import com.ovg.transportes.dto.feedback.FeedbackRequestDTO;
 import com.ovg.transportes.model.Feedback;
 import com.ovg.transportes.model.Usuario;
 import com.ovg.transportes.repository.FeedbackRepository;

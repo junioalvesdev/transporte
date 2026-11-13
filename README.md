@@ -31,8 +31,10 @@ igual o sistema antigo fazia.
 - **Banco de dados**: MySQL 8, com as mudanças de schema controladas por
   Flyway (cada alteração no banco vira um arquivo versionado, nunca editado
   depois de aplicado)
-- **Frontend**: HTML + JavaScript puro + Bootstrap — sem framework, sem passo
-  de build, os arquivos são servidos direto pelo Spring Boot
+- **Frontend**: páginas renderizadas no servidor com Thymeleaf (padrão MVC) +
+  Bootstrap pela CDN — sem JavaScript próprio e sem passo de build. O Java
+  monta cada tela pronta; o JS do Bootstrap só abre e fecha modais e menus.
+  A API JSON (`/api/...`) continua disponível para integrações.
 - **Login**: autenticação via Active Directory (LDAP) — a pessoa usa o mesmo
   usuário e senha que já usa no computador da empresa
 - **PDF**: geração da Ordem de Tráfego via `openhtmltopdf` (HTML/CSS vira PDF)

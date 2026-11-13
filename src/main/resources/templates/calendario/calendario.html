@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragmentos/layout :: head('Calendario', '/css/calendario.css')}"></head>
+
+    <!-- Calendario (pagina principal). Tudo vem pronto do Java em ${pagina}
+         (controller/CalendarioController + service/CalendarioService).
+         Navegar entre meses/semanas, filtrar e buscar carona sao links e forms
+         comuns: cada clique recarrega a pagina ja montada. -->
+    <body th:class="${pagina.classeBody}">
+        <nav th:replace="~{fragmentos/layout :: menu}"></nav>
+
+        <main class="container-fluid px-4 pb-5">
+            <th:block th:replace="~{fragmentos/layout :: avisos}"></th:block>
+
+            <div class="calendario-layout">
+
+                <!-- ============================== Lateral ============================== -->
+                <aside class="calendario-sidebar">
+                    <button type="button" class="botao-criar-reserva" data-bs-toggle="modal" data-bs-target="#modal-nova-reserva">
+                        <i class="bi bi-plus-lg"></i> Criar Reservas
+                    </button>
+
+                    <!-- mini calendario: so exibicao, sempre o mes atual de verdade -->
+                    <div class="mini-calendario">
+                        <div class="mini-calendario-cabecalho">
+                            <span th:text="${pagina.tituloMini}"></span>
+                        </div>
+                        <div class="mini-calendario-dias-semana">
+                            <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+                        </div>
+                        <div class="mini-calendario-grade">
+                            <div th:each="d : ${pagina.miniDias}" th:class="${d.classe}" th:text="${d.numero}"></div>
+                        </div>
+                    </div>
+
+                    <!-- filtro por status: form GET comum -->
+                    <form class="filtro-status" method="get" action="/calendario">
+                        <input type="hidden" name="modo" th:value="${pagina.modoAtual}">
+                        <input type="hidden" name="data" th:value="${pagina.dataAtual}">
+                        <h6 class="filtro-status-titulo">Status das viagens</h6>
+                        <label th:each="f : ${pagina.filtroStatus}" class="filtro-status-item">
+                            <input type="checkbox" name="status" th:value="${f.valor}" th:checked="${f.marcado}">
+                            <span th:class="${f.classeBolinha}"></span>
+                            <span th:text="${f.texto}"></span>
+                        </label>
+                        <button type="submit" class="btn btn-ovg-secundario btn-sm w-100 mt-2">Aplicar filtro</button>
+                    </form>
+                </aside>
+
+                <div class="calendario-principal">
+
+                    <!-- ============================== Cabecalho ============================== -->
+                    <div class="calendario-cabecalho">
+                        <div class="calendario-cabecalho-esquerda">
+                            <div class="calendario-icone">OVG</div>
+                            <div class="calendario-nav">
+                                <a class="botao-nav-circular text-decoration-none" th:href="${pagina.urlAnterior}" title="Anterior">&lsaquo;</a>
+                                <a class="botao-nav-circular text-decoration-none" th:href="${pagina.urlProximo}" title="Proximo">&rsaquo;</a>
+                            </div>
+                            <a class="botao-hoje text-decoration-none" th:href="${pagina.urlHoje}">Hoje</a>
+                            <h1 class="calendario-titulo" th:text="${pagina.titulo}"></h1>
+                        </div>
+
+                        <!-- busca de carona: form GET; o resultado volta num modal ja aberto -->
+                        <div class="calendario-busca-wrapper">
+                            <span class="calendario-busca-legenda">
+                                <i class="bi bi-signpost-split-fill"></i> Buscar carona disponivel
+                                <span class="badge-novidade">Novo</span>
+                            </span>
+                            <form class="calendario-busca-viagem" method="get" action="/calendario"
+                                  title="Encontre uma viagem ja aberta indo pro mesmo lugar e entre direto nela, sem esperar aprovacao">
+                                <input type="hidden" name="modo" th:value="${pagina.modoAtual}">
+                                <input type="hidden" name="data" th:value="${pagina.dataAtual}">
+                                <input type="hidden" name="status" th:each="f : ${pagina.filtroStatus}" th:if="${f.marcado}" th:value="${f.valor}">
+                                <input type="date" name="busca" class="form-control form-control-sm" required
+                                       th:value="${pagina.busca.data}" th:min="${pagina.busca.dataMinima}">
+                                <input type="number" name="passageiros" min="1" class="form-control form-control-sm" title="Passageiros" required
+                                       th:value="${pagina.busca.passageiros}">
+                                <button type="submit" class="btn btn-ovg-secundario btn-sm">Buscar viagens</button>
+                            </form>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <button th:if="${pagina.ehTransporte}" type="button" class="btn btn-ovg-principal btn-sm"
+                                    data-bs-toggle="modal" data-bs-target="#modal-ordem-trafego">
+                                Gerar Ordem de Trafego
+                            </button>
+                            <div class="calendario-modo btn-group btn-group-sm">
+                                <a th:class="${pagina.classeBotaoSemana}" th:href="${pagina.urlSemana}">Semana</a>
+                                <a th:class="${pagina.classeBotaoMes}" th:href="${pagina.urlMes}">Mes</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================== Grade ============================== -->
+                    <div class="calendario-container">
+                        <div class="mes-cabecalho-dias">
+                            <div th:each="nome : ${pagina.diasSemana}" class="mes-dia-semana" th:text="${nome}"></div>
+                        </div>
+
+                        <!-- visao de mes: 6 semanas, ate 3 viagens por dia + "+N mais" -->
+                        <div th:if="${pagina.visaoMes}" class="mes-grade">
+                            <div th:each="dia : ${pagina.dias}" th:class="${dia.classe}">
+                                <div class="mes-dia-numero" th:text="${dia.numero}"></div>
+                                <div th:each="e : ${dia.eventosVisiveis}"
+                                     th:class="${e.classe}" th:title="${e.dica}" th:text="${e.texto}"
+                                     role="button" data-bs-toggle="modal" th:data-bs-target="${e.alvoModal}"></div>
+                                <div th:if="${dia.textoMais}" class="mais-eventos" th:text="${dia.textoMais}"
+                                     role="button" data-bs-toggle="modal" th:data-bs-target="${dia.alvoModalDia}"></div>
+                            </div>
+                        </div>
+
+                        <!-- visao de semana: 7 colunas com todas as viagens de cada dia -->
+                        <div th:unless="${pagina.visaoMes}" class="semana-grade">
+                            <div th:each="dia : ${pagina.dias}" class="semana-coluna">
+                                <div th:class="${dia.classe}" th:text="${dia.numero}"></div>
+                                <div th:each="e : ${dia.todosEventos}"
+                                     th:class="${e.classe}" th:title="${e.dica}" th:text="${e.texto}"
+                                     role="button" data-bs-toggle="modal" th:data-bs-target="${e.alvoModal}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- ============================== Modais ==============================
+             Os modais so do calendario ficam em templates/calendario/modais/;
+             os compartilhados com outras telas, em templates/fragmentos/. -->
+        <th:block th:replace="~{calendario/modais/dia :: modais}"></th:block>
+        <th:block th:replace="~{calendario/modais/viagem :: modais}"></th:block>
+        <th:block th:replace="~{calendario/modais/solicitacao :: modais}"></th:block>
+        <th:block th:replace="~{calendario/modais/busca-carona :: modal}"></th:block>
+        <th:block th:replace="~{fragmentos/modal-nova-reserva :: modal(${pagina.formNovaReserva})}"></th:block>
+        <th:block th:if="${pagina.ehTransporte}">
+            <div th:replace="~{fragmentos/modal-ordem-trafego :: modal(${pagina.formOrdemTrafego})}"></div>
+        </th:block>
+
+        <script th:replace="~{fragmentos/layout :: scripts}"></script>
+    </body>
+</html>

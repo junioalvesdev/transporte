@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragmentos/layout :: head('Entrar', null)}"></head>
+
+    <!-- Tela de login: form POST comum pra /login, que o Spring Security recebe
+         e autentica no AD. Sem menu (ninguem esta logado ainda). -->
+    <body class="d-flex align-items-center" style="min-height: 100vh;">
+        <main class="container" style="max-width: 380px;">
+            <div class="cartao cartao-busca">
+                <h1 class="h5 mb-3 text-center">Central de Transportes</h1>
+                <p class="text-muted small text-center mb-4">Entre com seu usuario de rede (o mesmo do computador)</p>
+
+                <form method="post" action="/login">
+                    <label class="d-block mb-3">
+                        <span class="form-label d-block">Usuario</span>
+                        <input name="login" class="form-control" required autofocus>
+                    </label>
+
+                    <label class="d-block mb-3">
+                        <span class="form-label d-block">Senha</span>
+                        <input type="password" name="senha" class="form-control" required>
+                    </label>
+
+                    <div th:if="${erroLogin}" class="text-danger small mb-3" th:text="${erroLogin}"></div>
+
+                    <button type="submit" class="btn btn-ovg-principal w-100">Entrar</button>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>

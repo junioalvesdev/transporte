@@ -1,0 +1,55 @@
+<!-- Modal "Gerar Ordem de Trafego", usado na Lista de Reservas e no Calendario.
+     form = FormOrdemTrafegoDTO. O PDF abre numa aba nova (target="_blank").
+     Uso: th:replace="~{fragmentos/modal-ordem-trafego :: modal(PAGINA.formOrdemTrafego)}" -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="modal(form)" class="modal fade" id="modal-ordem-trafego" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="/ordens-trafego" target="_blank">
+            <div class="modal-header">
+                <h5 class="modal-title">Gerar Ordem de Trafego</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body row g-3">
+                <label class="col-12">
+                    <span class="form-label d-block">Veiculo</span>
+                    <select name="veiculoId" class="form-select" required>
+                        <option value="">Selecione</option>
+                        <optgroup th:each="tipo : ${form.veiculosPorTipo}" th:label="${tipo.key}">
+                            <option th:each="o : ${tipo.value}" th:value="${o.valor}" th:text="${o.texto}"></option>
+                        </optgroup>
+                    </select>
+                </label>
+
+                <label class="col-12">
+                    <span class="form-label d-block">Motorista</span>
+                    <select name="motoristaId" class="form-select" required>
+                        <option value="">Selecione</option>
+                        <option th:each="o : ${form.motoristas}" th:value="${o.valor}" th:text="${o.texto}"></option>
+                    </select>
+                </label>
+
+                <label class="col-6">
+                    <span class="form-label d-block">Data</span>
+                    <input type="date" name="data" class="form-control" required>
+                </label>
+
+                <label class="col-6">
+                    <span class="form-label d-block">Data final (opcional)</span>
+                    <input type="date" name="dataFim" class="form-control">
+                </label>
+
+                <label class="col-12">
+                    <span class="form-label d-block">Unidade</span>
+                    <select name="unidade" class="form-select" required>
+                        <option th:each="o : ${form.unidades}" th:value="${o.valor}" th:text="${o.texto}"></option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" class="btn btn-ovg-principal">Gerar PDF</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -42,27 +42,40 @@ mudando pra `false` a variável `AUTH_TESTE_HABILITADO` no `docker-compose.yml`.
 ```
 transporte-novo/
 ├── src/main/java/com/ovg/transportes/
-│   ├── controller/     # os endpoints da API (o que o frontend chama)
-│   ├── service/        # as regras de negocio (aprovar solicitacao, etc.)
-│   ├── repository/      # acesso ao banco (Spring Data JPA)
-│   ├── model/           # as entidades (Solicitacao, Viagem, Veiculo...)
-│   ├── dto/              # os objetos que trafegam entre frontend e API
-│   ├── security/         # login via LDAP e o login de teste
-│   ├── config/           # configuracoes gerais do Spring
-│   └── common/           # excecoes e classes compartilhadas
+│   ├── controller/        # (C) os endpoints das paginas: recebem a requisicao,
+│   │   │                  #     chamam o service e escolhem a tela (ex.: CalendarioController)
+│   │   └── api/           # a API JSON (/api/...), para integracoes
+│   ├── service/           # (M) as regras de negocio (SolicitacaoService, ViagemService...)
+│   │   └── tela/          #     os services de cada tela: montam os dados prontos pra exibir
+│   │                      #     (CalendarioService, ReservasService...) usando os de negocio
+│   ├── repository/        # (M) acesso ao banco (Spring Data JPA)
+│   ├── model/             # (M) as entidades (Solicitacao, Viagem, Veiculo...)
+│   ├── dto/               # os objetos que trafegam entre as camadas
+│   │   ├── solicitacao/ viagem/ veiculo/ motorista/ ...   # do sistema, por assunto
+│   │   └── tela/          # os das telas, ja formatados: uma pasta por tela
+│   │                      #     (calendario/, reservas/...) + layout/ e formularios/ compartilhados
+│   ├── security/          # login via LDAP e o login de teste
+│   ├── config/            # configuracoes gerais do Spring
+│   └── common/            # excecoes e classes compartilhadas
+│       └── tela/          #     formatacao, textos de status e validacao usados pelas telas
 │
 ├── src/main/resources/
 │   ├── application.yml           # todas as configuracoes (banco, LDAP, etc.)
 │   ├── db/migration/              # como o banco e criado (Flyway)
-│   │   ├── V1__schema_inicial.sql    # todas as tabelas
-│   │   └── V2__dados_iniciais.sql    # catalogo IBGE, unidades de exemplo, login de teste
-│   └── static/                   # o frontend inteiro (HTML, CSS, JS)
-│       ├── index.html            # tela principal (buscar viagem, solicitar)
-│       ├── calendario.html       # calendario do Departamento de Transportes
-│       ├── solicitacoes-pendentes.html
-│       ├── veiculos.html / motoristas.html
-│       └── js/                   # um arquivo JS por tela/funcionalidade
+│   ├── templates/                 # (V) as telas (Thymeleaf), uma pasta por tela
+│   │   ├── fragmentos/            # pedacos comuns: layout (menu, avisos), modais compartilhados
+│   │   ├── calendario/  reservas/  pendentes/  minhas/
+│   │   ├── veiculos/  motoristas/  relatorios/
+│   │   └── login.html
+│   └── static/css/                # os estilos
 │
 ├── Dockerfile                    # como a aplicacao vira uma imagem Docker
 └── docker-compose.yml            # como subir o sistema (banco vazio, login de teste)
 ```
+
+Como uma tela funciona (ex.: Veiculos): o navegador pede `GET /veiculos` →
+`VeiculosController` chama `VeiculosService.montarLista()` → o service devolve
+um DTO com tudo pronto pra exibir (textos formatados, opcoes marcadas) → o
+controller poe no `Model` e escolhe `veiculos/lista` → o Thymeleaf preenche o
+HTML e o navegador recebe a pagina pronta. Formularios sao POST comuns que
+gravam e voltam pra tela com um aviso (Post/Redirect/Get).

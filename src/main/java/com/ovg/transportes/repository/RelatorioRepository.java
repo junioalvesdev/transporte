@@ -1,6 +1,6 @@
 package com.ovg.transportes.repository;
 
-import com.ovg.transportes.dto.ContagemDTO;
+import com.ovg.transportes.dto.relatorio.ContagemDTO;
 import com.ovg.transportes.model.Viagem;
 
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +13,7 @@ import java.util.List;
 public interface RelatorioRepository extends Repository<Viagem, Long> {
 
     @Query("""
-        SELECT new com.ovg.transportes.dto.ContagemDTO(m.nome, COUNT(v))
+        SELECT new com.ovg.transportes.dto.relatorio.ContagemDTO(m.nome, COUNT(v))
         FROM Viagem v JOIN v.motorista m
         WHERE v.dataHoraSaida BETWEEN :inicio AND :fim
         GROUP BY m.nome
@@ -22,7 +22,7 @@ public interface RelatorioRepository extends Repository<Viagem, Long> {
     List<ContagemDTO> contarPorMotorista(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
     @Query("""
-        SELECT new com.ovg.transportes.dto.ContagemDTO(tv.nome, COUNT(v))
+        SELECT new com.ovg.transportes.dto.relatorio.ContagemDTO(tv.nome, COUNT(v))
         FROM Viagem v JOIN v.veiculo ve JOIN ve.tipoVeiculo tv
         WHERE v.dataHoraSaida BETWEEN :inicio AND :fim
         GROUP BY tv.nome
@@ -31,7 +31,7 @@ public interface RelatorioRepository extends Repository<Viagem, Long> {
     List<ContagemDTO> contarPorTipoVeiculo(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim);
 
     @Query("""
-        SELECT new com.ovg.transportes.dto.ContagemDTO(CAST(v.status AS string), COUNT(v))
+        SELECT new com.ovg.transportes.dto.relatorio.ContagemDTO(CAST(v.status AS string), COUNT(v))
         FROM Viagem v
         WHERE v.dataHoraSaida BETWEEN :inicio AND :fim
         GROUP BY v.status

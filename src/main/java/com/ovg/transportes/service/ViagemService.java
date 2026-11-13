@@ -2,12 +2,12 @@ package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.NegocioException;
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
-import com.ovg.transportes.dto.AprovarSolicitacaoRequestDTO;
-import com.ovg.transportes.dto.AtualizarViagemRequestDTO;
-import com.ovg.transportes.dto.CriarViagemRequestDTO;
-import com.ovg.transportes.dto.PontoRotaRequestDTO;
-import com.ovg.transportes.dto.SolicitarVagaRequestDTO;
-import com.ovg.transportes.dto.ViagemResponseDTO;
+import com.ovg.transportes.dto.solicitacao.AprovarSolicitacaoRequestDTO;
+import com.ovg.transportes.dto.viagem.AtualizarViagemRequestDTO;
+import com.ovg.transportes.dto.viagem.CriarViagemRequestDTO;
+import com.ovg.transportes.dto.viagem.PontoRotaRequestDTO;
+import com.ovg.transportes.dto.viagem.SolicitarVagaRequestDTO;
+import com.ovg.transportes.dto.viagem.ViagemResponseDTO;
 import com.ovg.transportes.model.Cidade;
 import com.ovg.transportes.model.LocalAdministrativo;
 import com.ovg.transportes.model.Motorista;
@@ -103,7 +103,7 @@ public class ViagemService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Viagem nao encontrada: " + requisicao.viagemExistenteId()))
             : criarViagemComRota(requisicao.novaViagem());
 
-        vincularParticipante(viagem, solicitacao, solicitacao.getQtdPassageiros(), cidadeEmbarque, cidadeDesembarque);
+        vincularParticipante(viagem, solicitacao, solicitacao.getQtdPassageiros(), cidadeEmbarque, cidadeDesembarque, false);
         solicitacao.aprovar();
 
         return ViagemResponseDTO.de(viagem);
@@ -156,7 +156,7 @@ public class ViagemService {
         // (a coluna solicitacao_id e not-null, e o Hibernate nao salva em cascata aqui)
         solicitacaoRepository.save(solicitacao);
 
-        vincularParticipante(viagem, solicitacao, requisicao.qtdPassageiros(), cidadeEmbarque, cidadeDesembarque);
+        vincularParticipante(viagem, solicitacao, requisicao.qtdPassageiros(), cidadeEmbarque, cidadeDesembarque, true);
         return ViagemResponseDTO.de(viagem);
     }
 
@@ -187,9 +187,16 @@ public class ViagemService {
         return ViagemResponseDTO.de(viagem);
     }
 
+    // TRANSPORTE ve o calendario inteiro (precisa, pra gerenciar tudo); quem
+    // nao e TRANSPORTE so ve as viagens onde tem uma participacao propria —
+    // sem isso, qualquer usuario autenticado enxergava nome, telefone e
+    // observacoes de todo mundo que usou o sistema, nao so as suas viagens
     public List<ViagemResponseDTO> listarNoPeriodo(LocalDateTime inicio, LocalDateTime fim) {
-        Long usuarioLogadoId = usuarioAutenticadoProvider.obterUsuarioLogado().getId();
+        Usuario usuarioLogado = usuarioAutenticadoProvider.obterUsuarioLogado();
+        Long usuarioLogadoId = usuarioLogado.getId();
+        boolean ehTransporte = usuarioLogado.temPerfil("TRANSPORTE");
         return viagemRepository.findByDataHoraSaidaBetween(inicio, fim).stream()
+            .filter(viagem -> ehTransporte || minhaSolicitacaoNaViagem(viagem, usuarioLogadoId) != null)
             .map(viagem -> ViagemResponseDTO.de(viagem, minhaSolicitacaoNaViagem(viagem, usuarioLogadoId)))
             .toList();
     }
@@ -247,11 +254,11 @@ public class ViagemService {
         );
     }
 
-    private void vincularParticipante(Viagem viagem, Solicitacao solicitacao, int qtdPassageiros, Cidade cidadeEmbarque, Cidade cidadeDesembarque) {
+    private void vincularParticipante(Viagem viagem, Solicitacao solicitacao, int qtdPassageiros, Cidade cidadeEmbarque, Cidade cidadeDesembarque, boolean viaCarona) {
         if (!viagem.temVagaPara(qtdPassageiros)) {
             throw new NegocioException("Vagas insuficientes na viagem selecionada");
         }
-        ViagemParticipante participante = new ViagemParticipante(viagem, solicitacao, qtdPassageiros, cidadeEmbarque, cidadeDesembarque);
+        ViagemParticipante participante = new ViagemParticipante(viagem, solicitacao, qtdPassageiros, cidadeEmbarque, cidadeDesembarque, viaCarona);
         viagemParticipanteRepository.save(participante);
         // o save() acima nao atualiza sozinho a colecao "participantes" ja
         // carregada em memoria (relacao inversa, Hibernate nao sincroniza isso

@@ -1,0 +1,127 @@
+<!-- Modais "Detalhes da viagem": um por viagem do periodo na tela.
+     TRANSPORTE edita (numa viagem de hoje pra frente); quem pegou vaga pode
+     cancelar a propria participacao. Incluido em calendario/calendario.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <div th:each="v : ${pagina.viagens}" th:id="${v.modalId}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalhes da viagem</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- ============ Resumo ============ -->
+                    <dl class="row mb-0">
+                        <dt class="col-5">Solicitado por</dt>
+                        <dd class="col-7" th:text="${v.solicitantes}"></dd>
+
+                        <th:block th:if="${!v.caronas.isEmpty()}">
+                            <dt class="col-5">Caronas</dt>
+                            <dd class="col-7 lista-caronas">
+                                <span th:each="nome : ${v.caronas}" class="carona-nome" th:text="${nome}"></span>
+                            </dd>
+                        </th:block>
+
+                        <th:block th:if="${v.telefones}">
+                            <dt class="col-5">Telefone</dt>
+                            <dd class="col-7" th:text="${v.telefones}"></dd>
+                        </th:block>
+
+                        <th:block th:if="${v.titulo}">
+                            <dt class="col-5">Titulo</dt>
+                            <dd class="col-7" th:text="${v.titulo}"></dd>
+                        </th:block>
+
+                        <dt class="col-5">Origem</dt>
+                        <dd class="col-7" th:text="${v.origem}"></dd>
+
+                        <dt class="col-5">Destino</dt>
+                        <dd class="col-7" th:text="${v.destino}"></dd>
+
+                        <dt class="col-5">Saida</dt>
+                        <dd class="col-7" th:text="${v.saida}"></dd>
+
+                        <dt class="col-5">Retorno estimado</dt>
+                        <dd class="col-7" th:text="${v.retorno}"></dd>
+
+                        <dt class="col-5">Ocupacao</dt>
+                        <dd class="col-7" th:text="${v.ocupacao}"></dd>
+
+                        <dt class="col-5">Veiculo</dt>
+                        <dd class="col-7" th:text="${v.veiculo}"></dd>
+
+                        <dt class="col-5">Motorista</dt>
+                        <dd class="col-7" th:text="${v.motorista}"></dd>
+
+                        <dt class="col-5">Status atual</dt>
+                        <dd class="col-7"><span th:class="${v.classeStatus}" th:text="${v.status}"></span></dd>
+
+                        <th:block th:if="${v.observacoes}">
+                            <dt class="col-5">Observacoes</dt>
+                            <dd class="col-7" th:text="${v.observacoes}"></dd>
+                        </th:block>
+                    </dl>
+
+                    <div th:if="${v.passada}" class="alert alert-secondary small mb-0 mt-2">
+                        Esta viagem ja ocorreu e nao pode mais ser alterada.
+                    </div>
+
+                    <!-- ============ Editar (TRANSPORTE) ============ -->
+                    <form th:if="${v.podeEditar}" th:id="${v.formEditarId}" method="post" th:action="${v.urlEditar}" class="row g-3 mt-1">
+                        <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+                        <input type="hidden" name="statusAtual" th:value="${v.statusAtual}">
+
+                        <label class="col-12">
+                            <span class="form-label d-block">Veiculo</span>
+                            <select name="veiculoId" class="form-select" required>
+                                <option th:each="o : ${v.veiculos}" th:value="${o.valor}" th:text="${o.texto}" th:selected="${o.selecionado}"></option>
+                            </select>
+                        </label>
+
+                        <label class="col-12">
+                            <span class="form-label d-block">Motorista</span>
+                            <select name="motoristaId" class="form-select" required>
+                                <option th:each="o : ${v.motoristas}" th:value="${o.valor}" th:text="${o.texto}" th:selected="${o.selecionado}"></option>
+                            </select>
+                        </label>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Saida</span>
+                            <input type="datetime-local" name="saida" class="form-control" required th:value="${v.saidaCampo}">
+                        </label>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Retorno estimado</span>
+                            <input type="datetime-local" name="retorno" class="form-control" th:value="${v.retornoCampo}">
+                        </label>
+
+                        <label class="col-12">
+                            <span class="form-label d-block" th:text="${v.rotuloCapacidade}"></span>
+                            <input type="number" name="capacidade" class="form-control" required th:value="${v.capacidade}" th:min="${v.capacidadeMinima}">
+                        </label>
+
+                        <label class="col-12">
+                            <span class="form-label d-block">Status</span>
+                            <select name="status" class="form-select">
+                                <option th:each="o : ${v.statusOpcoes}" th:value="${o.valor}" th:text="${o.texto}" th:selected="${o.selecionado}"></option>
+                            </select>
+                        </label>
+                    </form>
+                </div>
+
+                <!-- botoes no rodape; "Salvar" envia o form de cima pelo atributo form="..." -->
+                <div class="modal-footer justify-content-start">
+                    <button th:if="${v.podeEditar}" type="submit" th:form="${v.formEditarId}" class="btn btn-ovg-principal">
+                        Salvar alteracoes
+                    </button>
+                    <form th:if="${v.podeCancelarParticipacao}" method="post" th:action="${v.urlCancelarParticipacao}">
+                        <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+                        <button type="submit" class="btn btn-ovg-secundario">Cancelar minha participacao</button>
+                    </form>
+                    <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>

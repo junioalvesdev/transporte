@@ -1,0 +1,33 @@
+<!-- Modais "Editar motorista": um por motorista da tabela, ja preenchido.
+     Incluido em motoristas/lista.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <div th:each="m : ${pagina.linhas}" th:id="${m.modalEditarId}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="post" th:action="${m.urlEditar}">
+                <input type="hidden" name="pagina" th:value="${pagina.paginaAtual}">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="${m.tituloEditar}"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body row g-3">
+                    <label class="col-12">
+                        <span class="form-label d-block">Nome</span>
+                        <input name="nome" class="form-control" required th:value="${m.nome}">
+                    </label>
+
+                    <label class="col-12">
+                        <span class="form-label d-block">Telefone</span>
+                        <input name="telefone" class="form-control" th:value="${m.telefone}">
+                    </label>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-ovg-principal">Salvar alteracoes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</th:block>

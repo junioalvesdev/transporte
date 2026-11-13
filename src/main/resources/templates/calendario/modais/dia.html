@@ -1,0 +1,24 @@
+<!-- Modal "+N mais": todas as viagens de um dia que nao couberam na celula do mes.
+     Clicar numa delas fecha este e abre o detalhe (o Bootstrap troca de modal sozinho).
+     Incluido em calendario/calendario.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <th:block th:each="dia : ${pagina.dias}">
+        <div th:if="${dia.textoMais}" th:id="${dia.modalDiaId}" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:text="${dia.tituloModalDia}"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex flex-column gap-2">
+                            <div th:each="e : ${dia.todosEventos}"
+                                 th:class="${e.classe}" th:text="${e.textoDia}" style="white-space: normal"
+                                 role="button" data-bs-toggle="modal" th:data-bs-target="${e.alvoModal}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>

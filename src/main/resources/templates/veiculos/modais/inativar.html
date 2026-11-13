@@ -1,0 +1,21 @@
+<!-- Confirmacao "Inativar veiculo": uma por veiculo da tabela.
+     Incluido em veiculos/lista.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <div th:each="v : ${pagina.linhas}" th:id="${v.modalInativarId}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="post" th:action="${v.urlInativar}">
+                <input type="hidden" name="pagina" th:value="${pagina.paginaAtual}">
+
+                <div class="modal-body pt-4">
+                    Inativar o veiculo <strong th:text="${v.placa}"></strong>?
+                    <div class="text-muted small mt-1">Ele sai das listas, mas as viagens antigas continuam com ele.</div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" class="btn btn-danger">Inativar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</th:block>

@@ -2,9 +2,6 @@ package com.ovg.transportes.model;
 
 import com.ovg.transportes.common.Auditavel;
 import com.ovg.transportes.common.NegocioException;
-import com.ovg.transportes.model.Cidade;
-import com.ovg.transportes.model.LocalAdministrativo;
-import com.ovg.transportes.model.Usuario;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

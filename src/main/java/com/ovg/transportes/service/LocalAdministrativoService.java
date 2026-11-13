@@ -1,6 +1,6 @@
 package com.ovg.transportes.service;
 
-import com.ovg.transportes.dto.LocalAdministrativoResponseDTO;
+import com.ovg.transportes.dto.local.LocalAdministrativoResponseDTO;
 import com.ovg.transportes.repository.LocalAdministrativoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,0 +1,39 @@
+<!-- Modais de aprovar e de reprovar: um par por solicitacao pendente da lista.
+     Os formularios em si vem de fragmentos/form-aprovar.html.
+     Incluido em pendentes/lista.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <th:block th:each="s : ${pagina.cartoes}">
+
+        <!-- ============ Aprovar (cria a viagem) ============ -->
+        <div th:id="${s.modalAprovarId}" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Aprovar solicitacao</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small text-muted" th:text="${s.rota}"></p>
+                        <form th:replace="~{fragmentos/form-aprovar :: aprovar(${pagina.formAprovar}, ${s.urlAprovar}, ${s.partidaCampo}, ${s.retornoCampo}, ${pagina.filtros})}"></form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ Reprovar (motivo obrigatorio) ============ -->
+        <div th:id="${s.modalReprovarId}" class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Reprovar solicitacao</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small text-muted" th:text="${s.rota}"></p>
+                        <form th:replace="~{fragmentos/form-aprovar :: reprovar(${s.urlReprovar}, ${pagina.filtros})}"></form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>

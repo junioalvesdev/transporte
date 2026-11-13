@@ -58,3 +58,10 @@ transportes:
 
 server:
   port: ${SERVER_PORT:8080}
+  # paginas renderizadas no servidor (Lista de Reservas) vem com a tabela, o
+  # conteudo de todos os modais e a lista de cidades prontos no HTML — texto
+  # bem repetitivo, que comprimido cai pra uma fracao do tamanho
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,application/javascript,application/json
+    min-response-size: 2048

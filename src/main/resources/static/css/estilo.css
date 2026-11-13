@@ -207,3 +207,8 @@ body {
     font-weight: 600;
     color: var(--texto);
 }
+
+/* Relatorios: barras do grafico "Viagens por mes" (barra de progresso do Bootstrap) */
+.grafico-barra {
+    background-color: var(--ovg-roxo);
+}

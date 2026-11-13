@@ -1,7 +1,7 @@
 package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
-import com.ovg.transportes.dto.OrdemTrafegoRequestDTO;
+import com.ovg.transportes.dto.ordemtrafego.OrdemTrafegoRequestDTO;
 import com.ovg.transportes.model.Motorista;
 import com.ovg.transportes.model.Veiculo;
 import com.ovg.transportes.repository.MotoristaRepository;
@@ -69,7 +69,7 @@ public class OrdemTrafegoService {
         String periodo = formatarPeriodo(requisicao.data(), requisicao.dataFim());
         String dataHoraGeracao = LocalDateTime.now().format(FORMATO_DATA_HORA);
 
-        String tagBanner = tagImagemOpcional(CAMINHO_BANNER, "width:330px", "Sistema de Transportes");
+        String tagBanner = tagImagemOpcional(CAMINHO_BANNER, "width:330px", "OVG - Sistema do Transporte");
         String tagIconeVeiculo = tagImagemOpcional(caminhoIconeVeiculo(veiculo.getTipoVeiculo().getNome()), "width:260px", "diagrama do veiculo");
 
         String pagina1 = montarCabecalhoPagina(periodo, veiculo, motorista, autorizacao, unidade, tagBanner, tagIconeVeiculo)

@@ -1,7 +1,5 @@
 package com.ovg.transportes.model;
 
-import com.ovg.transportes.model.Cidade;
-import com.ovg.transportes.model.Solicitacao;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,6 +33,11 @@ public class ViagemParticipante {
     @Column(name = "qtd_passageiros", nullable = false)
     private Integer qtdPassageiros;
 
+    // true = entrou sozinho pela busca de caronas ("Solicitar vaga"), sem
+    // passar pelo Departamento de Transportes; false = solicitacao aprovada
+    @Column(name = "via_carona", nullable = false)
+    private boolean viaCarona;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cidade_embarque_id", nullable = false)
     private Cidade cidadeEmbarque;
@@ -55,11 +58,13 @@ public class ViagemParticipante {
         Solicitacao solicitacao,
         Integer qtdPassageiros,
         Cidade cidadeEmbarque,
-        Cidade cidadeDesembarque
+        Cidade cidadeDesembarque,
+        boolean viaCarona
     ) {
         this.viagem = viagem;
         this.solicitacao = solicitacao;
         this.qtdPassageiros = qtdPassageiros;
+        this.viaCarona = viaCarona;
         this.cidadeEmbarque = cidadeEmbarque;
         this.cidadeDesembarque = cidadeDesembarque;
     }
@@ -82,6 +87,10 @@ public class ViagemParticipante {
 
     public Integer getQtdPassageiros() {
         return qtdPassageiros;
+    }
+
+    public boolean isViaCarona() {
+        return viaCarona;
     }
 
     public Cidade getCidadeEmbarque() {

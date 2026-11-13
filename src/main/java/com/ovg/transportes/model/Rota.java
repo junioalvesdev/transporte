@@ -1,6 +1,5 @@
 package com.ovg.transportes.model;
 
-import com.ovg.transportes.model.Viagem;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;

@@ -2,11 +2,11 @@ package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.NegocioException;
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
-import com.ovg.transportes.dto.AtualizarSolicitacaoRequestDTO;
-import com.ovg.transportes.dto.PaginaDTO;
-import com.ovg.transportes.dto.ReprovarSolicitacaoRequestDTO;
-import com.ovg.transportes.dto.SolicitacaoRequestDTO;
-import com.ovg.transportes.dto.SolicitacaoResponseDTO;
+import com.ovg.transportes.dto.comum.PaginaDTO;
+import com.ovg.transportes.dto.solicitacao.AtualizarSolicitacaoRequestDTO;
+import com.ovg.transportes.dto.solicitacao.ReprovarSolicitacaoRequestDTO;
+import com.ovg.transportes.dto.solicitacao.SolicitacaoRequestDTO;
+import com.ovg.transportes.dto.solicitacao.SolicitacaoResponseDTO;
 import com.ovg.transportes.model.Cidade;
 import com.ovg.transportes.model.LocalAdministrativo;
 import com.ovg.transportes.model.Solicitacao;
@@ -152,23 +152,61 @@ public class SolicitacaoService {
         LocalDateTime inicioMes = LocalDateTime.now().withDayOfMonth(1).toLocalDate().atStartOfDay();
         LocalDateTime fimMes = inicioMes.plusMonths(1);
         Page<Solicitacao> pagina = solicitacaoRepository.findByDataHoraDesejadaBetweenOrderByIdDesc(inicioMes, fimMes, pageable);
-
-        // placas de todas as solicitacoes da pagina numa unica consulta, em vez
-        // de uma consulta por linha (N+1 que ficava mais lento quanto maior a
-        // lista — bem perceptivel com centenas de solicitacoes no mes)
-        List<Long> idsDaPagina = pagina.getContent().stream().map(Solicitacao::getId).toList();
-        Map<Long, String> placaPorSolicitacaoId = idsDaPagina.isEmpty()
-            ? Map.of()
-            : viagemParticipanteRepository.findBySolicitacaoIdIn(idsDaPagina).stream()
-                .collect(Collectors.toMap(
-                    participante -> participante.getSolicitacao().getId(),
-                    participante -> participante.getViagem().getVeiculo().getPlaca()
-                ));
+        Map<Long, String> placaPorSolicitacaoId = placasPorSolicitacao(pagina.getContent());
 
         return PaginaDTO.de(
             pagina,
             solicitacao -> SolicitacaoResponseDTO.de(solicitacao, placaPorSolicitacaoId.get(solicitacao.getId()))
         );
+    }
+
+    // Tela "Lista de Reservas" (renderizada no servidor, ver ReservasController):
+    // qualquer periodo escolhido nos filtros, com um teto de linhas pra um
+    // intervalo grande demais nao trazer as dezenas de milhares migradas do legado
+    @PreAuthorize("hasRole('TRANSPORTE')")
+    public List<SolicitacaoResponseDTO> listarNoPeriodo(LocalDateTime inicio, LocalDateTime fim, int limite) {
+        List<Solicitacao> solicitacoes = solicitacaoRepository
+            .findByDataHoraDesejadaBetweenOrderByIdDesc(inicio, fim, Pageable.ofSize(limite))
+            .getContent();
+        Map<Long, String> placaPorSolicitacaoId = placasPorSolicitacao(solicitacoes);
+        return solicitacoes.stream()
+            .map(solicitacao -> SolicitacaoResponseDTO.de(solicitacao, placaPorSolicitacaoId.get(solicitacao.getId())))
+            .toList();
+    }
+
+    // placas de todas as solicitacoes numa unica consulta, em vez de uma
+    // consulta por linha (N+1 que ficava mais lento quanto maior a lista —
+    // bem perceptivel com centenas de solicitacoes no mes)
+    private Map<Long, String> placasPorSolicitacao(List<Solicitacao> solicitacoes) {
+        List<Long> ids = solicitacoes.stream().map(Solicitacao::getId).toList();
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        return viagemParticipanteRepository.findBySolicitacaoIdIn(ids).stream()
+            .collect(Collectors.toMap(
+                participante -> participante.getSolicitacao().getId(),
+                participante -> participante.getViagem().getVeiculo().getPlaca()
+            ));
+    }
+
+    // detalhe de uma reserva na Lista de Reservas — monta o DTO dentro da
+    // transacao (open-in-view esta desligado) e ja com a placa, se houver viagem
+    @PreAuthorize("hasRole('TRANSPORTE')")
+    public SolicitacaoResponseDTO detalhar(Long id) {
+        Solicitacao solicitacao = buscarPorId(id);
+        return SolicitacaoResponseDTO.de(solicitacao, placasPorSolicitacao(List.of(solicitacao)).get(id));
+    }
+
+    // Formulario de nova reserva sem JS: a cidade chega como o texto escolhido
+    // na lista do navegador (datalist), no formato "Nome/UF" de nomeComUf()
+    public Long buscarIdCidadePorNomeComUf(String nomeComUf) {
+        int barra = nomeComUf == null ? -1 : nomeComUf.lastIndexOf('/');
+        if (barra <= 0) {
+            throw new NegocioException("Escolha a cidade na lista, no formato Cidade/UF");
+        }
+        return cidadeRepository.buscarPorNomeEUf(nomeComUf.substring(0, barra).trim(), nomeComUf.substring(barra + 1).trim())
+            .map(Cidade::getId)
+            .orElseThrow(() -> new NegocioException("Cidade nao encontrada: " + nomeComUf));
     }
 
     // Calendario: mostra solicitacoes que ainda NAO viraram viagem (pendente,

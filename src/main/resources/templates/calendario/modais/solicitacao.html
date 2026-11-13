@@ -1,0 +1,153 @@
+<!-- Modais "Detalhes da solicitacao": um por solicitacao que ainda nao virou
+     viagem (pendente, reprovada ou cancelada). Se pendente: TRANSPORTE aprova
+     ou reprova; quem pediu edita os dados ou cancela.
+     Incluido em calendario/calendario.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <div th:each="s : ${pagina.solicitacoes}" th:id="${s.modalId}" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalhes da solicitacao</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- ============ Resumo ============ -->
+                    <dl class="row mb-0">
+                        <dt class="col-5">Solicitado por</dt>
+                        <dd class="col-7" th:text="${s.solicitante}"></dd>
+
+                        <th:block th:if="${s.telefone}">
+                            <dt class="col-5">Telefone</dt>
+                            <dd class="col-7" th:text="${s.telefone}"></dd>
+                        </th:block>
+
+                        <th:block th:if="${s.titulo}">
+                            <dt class="col-5">Titulo</dt>
+                            <dd class="col-7" th:text="${s.titulo}"></dd>
+                        </th:block>
+
+                        <dt class="col-5">Origem</dt>
+                        <dd class="col-7" th:text="${s.origem}"></dd>
+
+                        <dt class="col-5">Destino</dt>
+                        <dd class="col-7" th:text="${s.destino}"></dd>
+
+                        <dt class="col-5">Data desejada</dt>
+                        <dd class="col-7" th:text="${s.data}"></dd>
+
+                        <dt class="col-5">Retorno</dt>
+                        <dd class="col-7" th:text="${s.retorno}"></dd>
+
+                        <dt class="col-5">Passageiros</dt>
+                        <dd class="col-7" th:text="${s.passageiros}"></dd>
+
+                        <dt class="col-5">Status atual</dt>
+                        <dd class="col-7"><span th:class="${s.classeStatus}" th:text="${s.status}"></span></dd>
+
+                        <th:block th:if="${s.observacoes}">
+                            <dt class="col-5">Observacoes</dt>
+                            <dd class="col-7" th:text="${s.observacoes}"></dd>
+                        </th:block>
+
+                        <th:block th:if="${s.motivoRecusa}">
+                            <dt class="col-5">Motivo da recusa</dt>
+                            <dd class="col-7" th:text="${s.motivoRecusa}"></dd>
+                        </th:block>
+                    </dl>
+
+                    <!-- ============ Aprovar / reprovar (TRANSPORTE) ============ -->
+                    <th:block th:if="${s.podeAprovar}">
+                        <hr>
+                        <form th:replace="~{fragmentos/form-aprovar :: aprovar(${pagina.formAprovar}, ${s.urlAprovar}, ${s.saidaCampo}, ${s.retornoCampo}, ${pagina.filtros})}"></form>
+                        <hr>
+                        <form th:replace="~{fragmentos/form-aprovar :: reprovar(${s.urlReprovar}, ${pagina.filtros})}"></form>
+                    </th:block>
+
+                    <!-- ============ Editar (quem pediu) ============ -->
+                    <form th:if="${s.podeEditar}" th:id="${s.formEditarId}" method="post" th:action="${s.urlEditar}" class="row g-3 mt-1">
+                        <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+
+                        <label class="col-12">
+                            <span class="form-label d-block">Finalidade</span>
+                            <input name="finalidade" class="form-control" maxlength="200" required th:value="${s.finalidade}">
+                        </label>
+
+                        <!-- origem/destino: unidade OU "outro local" (cidade + descricao), como no "Criar Reservas" -->
+                        <div class="col-12 campo-local">
+                            <label class="d-block">
+                                <span class="form-label d-block">Origem</span>
+                                <select name="localOrigemId" class="form-select">
+                                    <option th:each="o : ${s.opcoesOrigem}" th:value="${o.valor}" th:text="${o.texto}" th:selected="${o.selecionado}"></option>
+                                </select>
+                            </label>
+                            <div class="bloco-outro-local mt-2">
+                                <input name="cidadeOrigem" list="lista-cidades-edicao" class="form-control mb-2"
+                                       placeholder="Cidade/UF (comece a digitar)" th:value="${s.cidadeOrigem}">
+                                <input name="descricaoOrigem" class="form-control" maxlength="200"
+                                       placeholder="Endereco ou ponto de referencia (opcional)" th:value="${s.descricaoOrigem}">
+                            </div>
+                        </div>
+
+                        <div class="col-12 campo-local">
+                            <label class="d-block">
+                                <span class="form-label d-block">Destino</span>
+                                <select name="localDestinoId" class="form-select">
+                                    <option th:each="o : ${s.opcoesDestino}" th:value="${o.valor}" th:text="${o.texto}" th:selected="${o.selecionado}"></option>
+                                </select>
+                            </label>
+                            <div class="bloco-outro-local mt-2">
+                                <input name="cidadeDestino" list="lista-cidades-edicao" class="form-control mb-2"
+                                       placeholder="Cidade/UF (comece a digitar)" th:value="${s.cidadeDestino}">
+                                <input name="descricaoDestino" class="form-control" maxlength="200"
+                                       placeholder="Endereco ou ponto de referencia (opcional)" th:value="${s.descricaoDestino}">
+                            </div>
+                        </div>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Data e horario desejados</span>
+                            <input type="datetime-local" name="saida" class="form-control" required th:value="${s.saidaCampo}">
+                        </label>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Retorno estimado</span>
+                            <input type="datetime-local" name="retorno" class="form-control" th:value="${s.retornoCampo}">
+                        </label>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Quantidade de passageiros</span>
+                            <input type="number" name="qtdPassageiros" class="form-control" min="1" required th:value="${s.passageiros}">
+                        </label>
+
+                        <label class="col-6">
+                            <span class="form-label d-block">Telefone de contato</span>
+                            <input type="tel" name="telefone" class="form-control" maxlength="20" required th:value="${s.telefoneCampo}">
+                        </label>
+
+                        <label class="col-12">
+                            <span class="form-label d-block">Observacoes</span>
+                            <textarea name="observacoes" class="form-control" rows="2" maxlength="500" th:text="${s.observacoesCampo}"></textarea>
+                        </label>
+                    </form>
+                </div>
+
+                <!-- botoes no rodape; "Salvar" envia o form de cima pelo atributo form="..." -->
+                <div class="modal-footer justify-content-start">
+                    <button th:if="${s.podeEditar}" type="submit" th:form="${s.formEditarId}" class="btn btn-ovg-principal">
+                        Salvar alteracoes
+                    </button>
+                    <form th:if="${s.podeEditar}" method="post" th:action="${s.urlCancelar}">
+                        <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+                        <button type="submit" class="btn btn-ovg-secundario">Cancelar solicitacao</button>
+                    </form>
+                    <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- sugestoes de cidade dos formularios de edicao -->
+    <datalist th:if="${!pagina.solicitacoes.isEmpty()}" id="lista-cidades-edicao">
+        <option th:each="cidade : ${pagina.cidades}" th:value="${cidade}"></option>
+    </datalist>
+</th:block>

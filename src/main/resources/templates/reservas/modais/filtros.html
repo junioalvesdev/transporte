@@ -1,0 +1,39 @@
+<!-- Modal de filtros da Lista de Reservas: form GET comum, o resultado vem pela URL.
+     Incluido em reservas/lista.html com th:replace="~{reservas/modais/filtros :: modal}". -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="modal" class="modal fade" id="modal-filtros" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="get" action="/reservas">
+            <div class="modal-header">
+                <h5 class="modal-title">Filtrar Reservas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <span class="form-label d-block">Status</span>
+                <div class="mb-3">
+                    <label class="form-check d-block" th:each="o : ${pagina.opcoesStatus}">
+                        <input type="checkbox" class="form-check-input" name="status" th:value="${o.valor}" th:checked="${o.selecionado}">
+                        <span class="form-check-label" th:text="${o.texto}"></span>
+                    </label>
+                </div>
+
+                <label class="d-block mb-3">
+                    <span class="form-label d-block">Partida de</span>
+                    <input type="date" name="de" class="form-control" th:value="${pagina.filtroDe}">
+                </label>
+
+                <label class="d-block">
+                    <span class="form-label d-block">Partida ate</span>
+                    <input type="date" name="ate" class="form-control" th:value="${pagina.filtroAte}">
+                </label>
+
+                <div class="form-text">Sem datas, mostra o mes atual.</div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-ovg-principal">Aplicar filtros</button>
+            </div>
+        </form>
+    </div>
+</div>

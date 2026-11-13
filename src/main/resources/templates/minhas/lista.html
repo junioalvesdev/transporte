@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragmentos/layout :: head('Minhas solicitacoes', null)}"></head>
+
+    <!-- Pagina "Minhas solicitacoes". Tudo vem pronto do Java em ${pagina}
+         (controller/MinhasSolicitacoesController + service/MinhasSolicitacoesService). -->
+    <body>
+        <nav th:replace="~{fragmentos/layout :: menu}"></nav>
+
+        <main class="container pb-5">
+            <h1 class="h5 mb-3">Minhas solicitacoes</h1>
+
+            <th:block th:replace="~{fragmentos/layout :: avisos}"></th:block>
+
+            <!-- ============ Um cartao por solicitacao ============ -->
+            <div th:each="s : ${pagina.cartoes}" class="cartao cartao-viagem d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <div class="rota-titulo" th:text="${s.rota}"></div>
+                    <div class="text-muted small" th:text="${s.resumo}"></div>
+                    <div th:if="${s.motivoRecusa}" class="text-danger small mt-1">
+                        Motivo da recusa: <span th:text="${s.motivoRecusa}"></span>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <span th:class="${s.classeStatus}" th:text="${s.status}"></span>
+                    <div th:if="${s.podeCancelar}">
+                        <button type="button" class="btn btn-ovg-secundario btn-sm" data-bs-toggle="modal" th:data-bs-target="${s.alvoModalCancelar}">
+                            Cancelar
+                        </button>
+                    </div>
+                    <div th:if="${s.prazoEncerrado}" class="text-muted small">Prazo para cancelamento encerrado</div>
+                </div>
+            </div>
+
+            <p th:if="${pagina.cartoes.isEmpty()}" class="text-muted">Voce ainda nao fez nenhuma solicitacao.</p>
+
+            <div th:replace="~{fragmentos/layout :: paginacao(${pagina.paginacao})}"></div>
+        </main>
+
+        <!-- ============ Confirmacao de cancelamento: uma por solicitacao cancelavel ============ -->
+        <th:block th:each="s : ${pagina.cartoes}">
+            <div th:if="${s.podeCancelar}" th:id="${s.modalCancelarId}" class="modal fade" tabindex="-1">
+                <div class="modal-dialog">
+                    <form class="modal-content" method="post" th:action="${s.urlCancelar}">
+                        <input type="hidden" name="pagina" th:value="${pagina.paginaAtual}">
+                        <div class="modal-body pt-4">
+                            Cancelar esta solicitacao?
+                            <div class="text-muted small mt-1" th:text="${s.rota}"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-ovg-principal">Cancelar solicitacao</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </th:block>
+
+        <script th:replace="~{fragmentos/layout :: scripts}"></script>
+    </body>
+</html>

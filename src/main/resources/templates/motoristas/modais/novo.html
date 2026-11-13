@@ -1,0 +1,28 @@
+<!-- Modal "Novo motorista". Incluido em motoristas/lista.html. -->
+<div xmlns:th="http://www.thymeleaf.org" th:fragment="modal" class="modal fade" id="modal-novo-motorista" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="/motoristas">
+            <div class="modal-header">
+                <h5 class="modal-title">Novo motorista</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body row g-3">
+                <label class="col-12">
+                    <span class="form-label d-block">Nome</span>
+                    <input name="nome" class="form-control" required>
+                </label>
+
+                <label class="col-12">
+                    <span class="form-label d-block">Telefone</span>
+                    <input name="telefone" class="form-control">
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-ovg-principal">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>

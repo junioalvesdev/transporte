@@ -1,7 +1,7 @@
 package com.ovg.transportes.service;
 
-import com.ovg.transportes.dto.ContagemDTO;
-import com.ovg.transportes.dto.RelatorioMensalDTO;
+import com.ovg.transportes.dto.relatorio.ContagemDTO;
+import com.ovg.transportes.dto.relatorio.RelatorioMensalDTO;
 import com.ovg.transportes.repository.RelatorioRepository;
 
 import org.springframework.security.access.prepost.PreAuthorize;

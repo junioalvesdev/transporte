@@ -102,3 +102,10 @@
     border-radius: 20px;
     font-weight: 600;
 }
+
+/* Nova reserva: cidade/descricao so aparecem com "Outro local" escolhido
+   (sem suporte a :has, ficam sempre visiveis — o servidor ignora quando
+   uma unidade foi escolhida) */
+.campo-local:has(select option[value=""]:not(:checked)) .bloco-outro-local {
+    display: none;
+}

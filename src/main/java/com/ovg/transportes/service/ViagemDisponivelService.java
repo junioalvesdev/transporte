@@ -1,7 +1,7 @@
 package com.ovg.transportes.service;
 
-import com.ovg.transportes.dto.BuscaViagemRequestDTO;
-import com.ovg.transportes.dto.ViagemDisponivelDTO;
+import com.ovg.transportes.dto.viagem.BuscaViagemRequestDTO;
+import com.ovg.transportes.dto.viagem.ViagemDisponivelDTO;
 import com.ovg.transportes.model.PontoRota;
 import com.ovg.transportes.model.StatusParticipante;
 import com.ovg.transportes.model.Viagem;

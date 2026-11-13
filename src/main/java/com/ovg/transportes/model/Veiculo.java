@@ -1,7 +1,6 @@
 package com.ovg.transportes.model;
 
 import com.ovg.transportes.common.Auditavel;
-import com.ovg.transportes.model.LocalAdministrativo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

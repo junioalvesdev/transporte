@@ -1,6 +1,5 @@
 package com.ovg.transportes.model;
 
-import com.ovg.transportes.model.Departamento;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

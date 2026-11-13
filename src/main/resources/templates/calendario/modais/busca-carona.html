@@ -1,0 +1,66 @@
+<!-- Modal com o resultado da busca de carona. So existe aberto: a busca e um
+     form GET, e o servidor devolve o calendario com este modal ja aberto
+     (fechar = link pro calendario sem a busca). Incluido em calendario/calendario.html. -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modal">
+    <th:block th:if="${pagina.busca.aberta}">
+        <div th:class="${pagina.busca.classeModal}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" th:text="${pagina.busca.titulo}"></h5>
+                        <a th:href="${pagina.busca.urlFechar}" class="btn-close" aria-label="Fechar"></a>
+                    </div>
+
+                    <div class="modal-body">
+                        <div th:if="${pagina.busca.erro}" class="alert alert-danger small" th:text="${pagina.busca.erro}"></div>
+
+                        <!-- ============ Uma viagem aberta por cartao ============ -->
+                        <div th:each="c : ${pagina.busca.cartoes}" th:class="${c.classeCartao}">
+                            <div>
+                                <div class="rota-titulo" th:text="${c.rota}"></div>
+                                <div class="text-muted small" th:text="${c.data}"></div>
+                                <div class="mt-1" th:text="${c.horarios}"></div>
+                                <div class="mt-1 text-muted">
+                                    <i th:class="${c.iconeTipo}"></i>
+                                    <span th:text="${c.tipoVeiculo}"></span>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <span th:class="${c.classeVagas}" th:text="${c.vagas}"></span>
+                                <div class="d-flex flex-column align-items-end gap-2">
+                                    <form th:unless="${c.jaSolicitei}" method="post" th:action="${c.urlSolicitar}">
+                                        <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+                                        <input type="hidden" name="passageiros" th:value="${pagina.busca.passageiros}">
+                                        <input type="hidden" name="cidadeEmbarqueId" th:value="${c.cidadeEmbarqueId}">
+                                        <input type="hidden" name="cidadeDesembarqueId" th:value="${c.cidadeDesembarqueId}">
+                                        <button type="submit" class="btn btn-ovg-principal btn-sm">Solicitar vaga</button>
+                                    </form>
+
+                                    <th:block th:if="${c.jaSolicitei}">
+                                        <span class="badge badge-ja-solicitada"><i class="bi bi-check-circle-fill me-1"></i>Vaga solicitada</span>
+                                        <form method="post" th:action="${c.urlCancelar}">
+                                            <input type="hidden" name="filtros" th:value="${pagina.filtros}">
+                                            <button type="submit" class="btn btn-ovg-secundario btn-sm">Cancelar vaga</button>
+                                        </form>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- nada encontrado: sugere criar uma reserva -->
+                        <div th:if="${pagina.busca.semResultados}" class="text-muted">
+                            Nenhuma viagem aberta encontrada para esse dia.
+                            <a th:href="${pagina.busca.urlFechar}">Voltar ao calendario</a> e usar "Criar Reservas".
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <a th:href="${pagina.busca.urlFechar}" class="btn btn-ovg-secundario">Fechar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    </th:block>
+</th:block>

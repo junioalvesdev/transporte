@@ -488,3 +488,20 @@
         font-size: 1rem;
     }
 }
+
+/* Detalhe da viagem: cada pessoa que entrou por carona, uma embaixo da
+   outra, com fundo proprio pra destacar de quem pediu a viagem */
+.lista-caronas {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.carona-nome {
+    background: rgba(129, 107, 173, 0.14);
+    color: var(--ovg-roxo);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-weight: 600;
+}

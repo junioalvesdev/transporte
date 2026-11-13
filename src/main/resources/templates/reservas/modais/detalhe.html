@@ -1,0 +1,75 @@
+<!-- Modais de detalhe da Lista de Reservas: um por reserva da tabela.
+     Se a reserva estiver pendente, ja traz os formularios de aprovar e reprovar.
+     Incluido em reservas/lista.html com th:replace="~{reservas/modais/detalhe :: modais}". -->
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="modais">
+    <th:block th:each="grupo : ${pagina.grupos}">
+        <div th:each="r : ${grupo.linhas}" th:id="${r.modalId}" class="modal fade" tabindex="-1">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detalhes da reserva</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <dl class="row mb-0">
+                            <dt class="col-5">Requerente</dt>
+                            <dd class="col-7" th:text="${r.requerente}"></dd>
+
+                            <dt class="col-5">Telefone</dt>
+                            <dd class="col-7" th:text="${r.telefone}"></dd>
+
+                            <dt class="col-5">Titulo</dt>
+                            <dd class="col-7" th:text="${r.titulo}"></dd>
+
+                            <dt class="col-5">Origem</dt>
+                            <dd class="col-7" th:text="${r.origem}"></dd>
+
+                            <dt class="col-5">Destino</dt>
+                            <dd class="col-7" th:text="${r.destino}"></dd>
+
+                            <dt class="col-5">Partida</dt>
+                            <dd class="col-7" th:text="${r.partida}"></dd>
+
+                            <dt class="col-5">Retorno</dt>
+                            <dd class="col-7" th:text="${r.retorno}"></dd>
+
+                            <dt class="col-5">Usuarios</dt>
+                            <dd class="col-7" th:text="${r.usuarios}"></dd>
+
+                            <dt class="col-5">Veiculo</dt>
+                            <dd class="col-7" th:text="${r.veiculo}"></dd>
+
+                            <dt class="col-5">Status</dt>
+                            <dd class="col-7"><span th:class="${r.classeStatus}" th:text="${r.status}"></span></dd>
+
+                            <th:block th:if="${r.motivoRecusa}">
+                                <dt class="col-5">Motivo da recusa</dt>
+                                <dd class="col-7" th:text="${r.motivoRecusa}"></dd>
+                            </th:block>
+
+                            <th:block th:if="${r.observacoes}">
+                                <dt class="col-5">Observacoes</dt>
+                                <dd class="col-7" th:text="${r.observacoes}"></dd>
+                            </th:block>
+                        </dl>
+
+                        <th:block th:if="${r.pendente}">
+                            <hr>
+
+                            <form th:replace="~{fragmentos/form-aprovar :: aprovar(${pagina.formAprovar}, ${r.urlAprovar}, ${r.partidaCampo}, ${r.retornoCampo}, ${pagina.queryFiltros})}"></form>
+
+                            <hr>
+
+                            <form th:replace="~{fragmentos/form-aprovar :: reprovar(${r.urlReprovar}, ${pagina.queryFiltros})}"></form>
+                        </th:block>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-ovg-secundario" data-bs-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+</th:block>

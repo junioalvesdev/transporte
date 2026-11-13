@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragmentos/layout :: head('Solicitacoes pendentes', null)}"></head>
+
+    <!-- Pagina "Solicitacoes pendentes". Tudo vem pronto do Java em ${pagina}
+         (controller/SolicitacoesPendentesController + service/SolicitacoesPendentesService). -->
+    <body>
+        <nav th:replace="~{fragmentos/layout :: menu}"></nav>
+
+        <main class="container pb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h1 class="h5 mb-0">Solicitacoes pendentes</h1>
+                <a href="/solicitacoes-pendentes" class="btn btn-primary btn-sm">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+                </a>
+            </div>
+
+            <th:block th:replace="~{fragmentos/layout :: avisos}"></th:block>
+
+            <!-- ============ Um cartao por solicitacao pendente ============ -->
+            <div th:each="s : ${pagina.cartoes}" class="cartao cartao-viagem d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                    <div class="rota-titulo" th:text="${s.rota}"></div>
+                    <div class="text-muted small">
+                        <span th:text="${s.resumo}"></span>
+                        <span th:if="${s.urgente}" class="badge bg-danger ms-1">Urgente</span>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-person-fill me-1"></i>
+                        <span th:text="${s.solicitante}"></span>
+                    </div>
+                    <div th:if="${s.telefone}" class="text-muted small">
+                        <i class="bi bi-telephone-fill me-1"></i>
+                        <span th:text="${s.telefone}"></span>
+                    </div>
+                    <div th:if="${s.finalidade}" class="mt-1" th:text="${s.finalidade}"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-ovg-secundario btn-sm" data-bs-toggle="modal" th:data-bs-target="${s.alvoModalReprovar}">
+                        Reprovar
+                    </button>
+                    <button type="button" class="btn btn-ovg-principal btn-sm" data-bs-toggle="modal" th:data-bs-target="${s.alvoModalAprovar}">
+                        Aprovar
+                    </button>
+                </div>
+            </div>
+
+            <p th:if="${pagina.cartoes.isEmpty()}" class="text-muted">Nenhuma solicitacao pendente no momento.</p>
+
+            <div th:replace="~{fragmentos/layout :: paginacao(${pagina.paginacao})}"></div>
+        </main>
+
+        <!-- ============================== Modais ============================== -->
+        <th:block th:replace="~{pendentes/modais/aprovar-reprovar :: modais}"></th:block>
+
+        <script th:replace="~{fragmentos/layout :: scripts}"></script>
+    </body>
+</html>

@@ -1,6 +1,6 @@
 package com.ovg.transportes.service;
 
-import com.ovg.transportes.dto.TipoVeiculoResponseDTO;
+import com.ovg.transportes.dto.veiculo.TipoVeiculoResponseDTO;
 import com.ovg.transportes.repository.TipoVeiculoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

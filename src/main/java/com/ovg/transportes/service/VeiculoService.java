@@ -2,9 +2,9 @@ package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.NegocioException;
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
-import com.ovg.transportes.dto.PaginaDTO;
-import com.ovg.transportes.dto.VeiculoRequestDTO;
-import com.ovg.transportes.dto.VeiculoResponseDTO;
+import com.ovg.transportes.dto.comum.PaginaDTO;
+import com.ovg.transportes.dto.veiculo.VeiculoRequestDTO;
+import com.ovg.transportes.dto.veiculo.VeiculoResponseDTO;
 import com.ovg.transportes.model.LocalAdministrativo;
 import com.ovg.transportes.model.TipoVeiculo;
 import com.ovg.transportes.model.Veiculo;

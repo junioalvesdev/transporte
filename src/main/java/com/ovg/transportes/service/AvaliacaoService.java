@@ -2,7 +2,7 @@ package com.ovg.transportes.service;
 
 import com.ovg.transportes.common.NegocioException;
 import com.ovg.transportes.common.RecursoNaoEncontradoException;
-import com.ovg.transportes.dto.AvaliacaoRequestDTO;
+import com.ovg.transportes.dto.feedback.AvaliacaoRequestDTO;
 import com.ovg.transportes.model.Avaliacao;
 import com.ovg.transportes.model.ViagemParticipante;
 import com.ovg.transportes.repository.AvaliacaoRepository;

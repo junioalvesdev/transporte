@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+    <head th:replace="~{fragmentos/layout :: head('Lista de Reservas', '/css/reservas.css')}"></head>
+
+    <!-- Lista de Reservas (pagina principal). Sem JS proprio: o Java
+         (controller/ReservasController + service/ReservasService) entrega tudo pronto em ${pagina} e aqui so se
+         exibe ${...}. Os modais ficam cada um no seu arquivo, em reservas/modais/,
+         e sao incluidos no fim da pagina. O JS do Bootstrap (CDN) abre/fecha os modais. -->
+    <body th:class="${pagina.classeBody}">
+
+        <nav th:replace="~{fragmentos/layout :: menu}"></nav>
+
+        <main class="container-fluid px-4 pb-5">
+
+            <!-- ============================ Cabecalho ============================ -->
+            <div class="reservas-cabecalho">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-list-ul reservas-icone"></i>
+                    <div>
+                        <h1 class="h4 mb-0">Lista de Reservas</h1>
+                        <div class="text-muted small">
+                            <i class="bi bi-shield-lock-fill text-warning"></i>
+                            Visualizacao Administrativa - Todas as Reservas
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="/calendario" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-calendar3 me-1"></i>Ver Calendario
+                    </a>
+                    <button type="button" class="btn btn-ovg-principal btn-sm" data-bs-toggle="modal" data-bs-target="#modal-ordem-trafego">
+                        <i class="bi bi-file-earmark-text me-1"></i>Gerar Ordem de Trafego
+                    </button>
+                    <a th:href="${pagina.urlLista}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+                    </a>
+                </div>
+            </div>
+
+            <!-- ========================= Avisos (flash) ========================= -->
+            <th:block th:replace="~{fragmentos/layout :: avisos}"></th:block>
+
+            <!-- ======================= Barra de ferramentas ======================= -->
+            <div class="reservas-barra-ferramentas">
+                <button type="button" class="botao-criar-reserva" data-bs-toggle="modal" data-bs-target="#modal-nova-reserva">
+                    <i class="bi bi-plus-lg"></i> Criar Reservas
+                </button>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal-filtros">
+                        <i class="bi bi-funnel-fill me-1"></i>Filtrar Reservas
+                    </button>
+                    <a href="/reservas" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-x-circle me-1"></i>Limpar Filtros
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                    <span class="badge rounded-pill text-bg-info" th:text="${pagina.resumoFiltros}"></span>
+                    <span class="text-muted small" th:text="${pagina.resumoPeriodo}"></span>
+                </div>
+            </div>
+
+            <div th:if="${pagina.atingiuLimite}" class="alert alert-warning small">
+                O periodo escolhido tem muitas reservas: so as mais recentes estao aparecendo.
+                Diminua o intervalo de datas nos filtros.
+            </div>
+
+            <!-- ==================== Tabela (um bloco por mes) ==================== -->
+            <div th:each="grupo : ${pagina.grupos}" class="cartao reservas-grupo-mes mb-3">
+                <button type="button" class="reservas-grupo-cabecalho" data-bs-toggle="collapse" th:data-bs-target="${grupo.alvoCollapse}">
+                    <span>
+                        <i class="bi bi-calendar3 me-2"></i>
+                        <span th:text="${grupo.titulo}"></span>
+                        <span class="badge rounded-pill text-bg-secondary ms-2" th:text="${grupo.resumo}"></span>
+                    </span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+
+                <div class="collapse show" th:id="${grupo.collapseId}">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 reservas-tabela">
+                            <thead>
+                                <tr>
+                                    <th>Requerente</th>
+                                    <th>Titulo</th>
+                                    <th>Origem &rarr; Destino</th>
+                                    <th>Data/Hora Partida</th>
+                                    <th>Data/Hora Retorno</th>
+                                    <th>Status</th>
+                                    <th>Usuarios</th>
+                                    <th>Veiculo</th>
+                                    <th>Descricao</th>
+                                    <th>Acoes</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr th:each="r : ${grupo.linhas}">
+                                    <td>
+                                        <div class="fw-semibold">
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            <span th:text="${r.requerente}"></span>
+                                        </div>
+                                        <div class="text-muted small">
+                                            <i class="bi bi-telephone-fill me-1"></i>
+                                            <span th:text="${r.telefone}"></span>
+                                        </div>
+                                    </td>
+
+                                    <td class="fw-semibold">
+                                        <span th:if="${r.urgente}" class="badge text-bg-danger me-1">Urgente</span>
+                                        <span th:text="${r.titulo}"></span>
+                                    </td>
+
+                                    <td>
+                                        <div>
+                                            <i class="bi bi-geo-alt-fill text-success me-1"></i>
+                                            <span th:text="${r.origem}"></span>
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                            <span th:text="${r.destino}"></span>
+                                        </div>
+                                    </td>
+
+                                    <td th:text="${r.partida}"></td>
+                                    <td th:text="${r.retorno}"></td>
+                                    <td><span th:class="${r.classeStatus}" th:text="${r.status}"></span></td>
+                                    <td><span class="badge rounded-pill text-bg-info" th:text="${r.usuarios}"></span></td>
+                                    <td th:text="${r.veiculo}"></td>
+
+                                    <td class="reservas-descricao">
+                                        <button
+                                            type="button"
+                                            class="btn btn-link p-0 text-truncate d-block"
+                                            style="max-width: 160px"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="${r.alvoModal}"
+                                            th:text="${r.descricao}"></button>
+                                    </td>
+
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary btn-sm"
+                                            title="Ver detalhes"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="${r.alvoModal}">
+                                            <i class="bi bi-eye-fill"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <p th:if="${pagina.grupos.isEmpty()}" class="text-muted">Nenhuma reserva encontrada.</p>
+        </main>
+
+        <!-- ============================== Modais ==============================
+             Os modais so desta tela ficam em templates/reservas/modais/; os que
+             outras telas tambem usam (nova reserva, ordem de trafego) em templates/fragmentos/.
+             Precisam ficar nesta pagina (o Bootstrap so abre modal da mesma pagina),
+             mas o codigo de cada um fica separado. -->
+        <th:block th:replace="~{reservas/modais/detalhe :: modais}"></th:block>
+        <th:block th:replace="~{reservas/modais/filtros :: modal}"></th:block>
+        <th:block th:replace="~{fragmentos/modal-nova-reserva :: modal(${pagina.formNovaReserva})}"></th:block>
+        <div th:replace="~{fragmentos/modal-ordem-trafego :: modal(${pagina.formOrdemTrafego})}"></div>
+
+        <script th:replace="~{fragmentos/layout :: scripts}"></script>
+    </body>
+</html>

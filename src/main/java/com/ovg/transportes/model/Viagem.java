@@ -2,9 +2,6 @@ package com.ovg.transportes.model;
 
 import com.ovg.transportes.common.Auditavel;
 import com.ovg.transportes.common.NegocioException;
-import com.ovg.transportes.model.Motorista;
-import com.ovg.transportes.model.Rota;
-import com.ovg.transportes.model.Veiculo;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -54,7 +52,9 @@ public class Viagem extends Auditavel {
     @Column(nullable = false, length = 30)
     private StatusViagem status = StatusViagem.PLANEJADA;
 
+    // ordem de entrada na viagem — o detalhe lista as caronas nessa ordem
     @OneToMany(mappedBy = "viagem", fetch = FetchType.LAZY)
+    @OrderBy("id")
     private List<ViagemParticipante> participantes = new ArrayList<>();
 
     @OneToOne(mappedBy = "viagem", fetch = FetchType.LAZY)
